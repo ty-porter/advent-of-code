@@ -11,8 +11,6 @@ CREATE OR REPLACE FUNCTION process_raw_data()
 RETURNS VOID AS $$
 DECLARE
         rec RECORD;
-        position INT;
-        raw_data VARCHAR;
         lvalue INT;
         rvalue INT;
 BEGIN
