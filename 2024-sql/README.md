@@ -40,3 +40,15 @@ psql --quiet -f .\%dayno%\ingest.sql %connection%
 psql --quiet -c "COPY raw_data (raw_data) FROM 'C:\\Users\tyler\development\advent-of-code\2024-sql\%dayno%\prompt.txt' WITH (FORMAT text)" %connection%
 psql --quiet -f .\%dayno%\solution.sql %connection%
 ```
+
+Execution:
+
+```
+.\scripts\run.bat 01
+
+ part |  result
+------+----------
+    1 |  2970687
+    2 | 23963899
+(2 rows)
+```
