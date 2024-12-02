@@ -2,7 +2,7 @@ import argparse, copy, importlib, os
 
 from src.utils import Color, colorize
 
-parser = argparse.ArgumentParser(prog = "Advent of Code 2022")
+parser = argparse.ArgumentParser(prog = "Advent of Code 2024")
 parser.add_argument("solution", type=int, nargs="?")
 
 args = parser.parse_args()
@@ -21,7 +21,7 @@ else:
         if os.path.isdir(f"src/{solution_dir}") and solution_dir != "__pycache__":
             solution_dirs.append(f"src/{solution_dir}")
 
-print(colorize("Printing Advent of Code solutions for 2022!", Color.YELLOW))
+print(colorize("Printing Advent of Code solutions for 2024!", Color.YELLOW))
 
 for index, solution_dir in enumerate(solution_dirs):
     solution_package = solution_dir.replace("/", ".") + ".solution"
