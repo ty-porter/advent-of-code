@@ -138,9 +138,13 @@ WITH part1 AS (
         FROM reports
 )
 
-SELECT * FROM part1
-UNION ALL
-SELECT * FROM part2;
+SELECT
+        update_solution(2, results.part, results.result)
+FROM (
+        SELECT * FROM part1
+        UNION ALL
+        SELECT * FROM part2
+) AS results;
 
 DROP TABLE IF EXISTS
         raw_data
