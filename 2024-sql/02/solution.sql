@@ -1,138 +1,155 @@
-DROP TABLE IF EXISTS reports CASCADE;
+DROP TABLE IF EXISTS reports;
 
 CREATE TABLE reports (
         id SERIAL PRIMARY KEY
+        , position SERIAL
+        , levels INT[]
+        , valid BOOLEAN NOT NULL DEFAULT false
+        , original BOOLEAN NOT NULL DEFAULT true
 );
 
-DROP TABLE IF EXISTS levels;
+CREATE OR REPLACE FUNCTION is_in_bound(lvls INT[])
+RETURNS BOOLEAN AS $$
+DECLARE
+        i INT;
+        delta INT;
+BEGIN
+        FOR i IN 1..(array_length(lvls, 1) - 1)
+        LOOP
+                delta := lvls[i] - lvls[i + 1];
 
-CREATE TABLE levels (
-        report_id INT,
-        level INT,
-        position INT,
+                IF delta = 0 OR abs(delta) > 3 THEN
+                        RETURN false;
+                END IF;
+        END LOOP;
 
-        PRIMARY KEY (report_id, position),
-        FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE
-);
+        RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION is_strictly_decreasing(lvls INT[])
+RETURNS BOOLEAN AS $$
+DECLARE
+        i INT;
+BEGIN
+        FOR i IN 1..(array_length(lvls, 1) - 1)
+        LOOP
+                IF lvls[i] - lvls[i + 1] >= 0 THEN
+                        RETURN false;
+                END IF;
+        END LOOP;
+
+        RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION is_strictly_increasing(lvls INT[])
+RETURNS BOOLEAN AS $$
+DECLARE
+        i INT;
+BEGIN
+        FOR i IN 1..(array_length(lvls, 1) - 1)
+        LOOP
+                IF lvls[i] - lvls[i + 1] <= 0 THEN
+                        RETURN false;
+                END IF;
+        END LOOP;
+
+        RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_validity_trigger_fn()
+RETURNS TRIGGER AS $$
+BEGIN
+        UPDATE reports
+        SET valid = (
+                is_in_bound(levels)
+                AND
+                (
+                        is_strictly_decreasing(levels)
+                        OR
+                        is_strictly_increasing(levels)
+                )
+        )
+        WHERE id = NEW.id;
+
+        RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER check_validity_after_insert
+AFTER INSERT ON reports
+FOR EACH ROW
+EXECUTE FUNCTION check_validity_trigger_fn();
 
 CREATE OR REPLACE FUNCTION process_raw_data()
 RETURNS VOID AS $$
-DECLARE
-        rec RECORD;
 BEGIN
-        FOR rec IN SELECT raw_data.raw_data FROM raw_data
-        LOOP
-                INSERT INTO reports DEFAULT VALUES;
-
-                INSERT INTO levels (report_id, level, position)
-                SELECT
-                        (SELECT max(id) as report_id FROM reports) as report_id
-                        , level
-                        , ROW_NUMBER() OVER () AS position
-                FROM (
+        INSERT INTO reports (levels)
+        SELECT
+                ARRAY(
                         SELECT
-                                unnest(string_to_array(raw_data.raw_data, ' '))::INT AS level
-                        FROM raw_data
-                        WHERE raw_data.position = (SELECT max(id) as report_id FROM reports)
-                ) raw_data_subquery;
+                                element::INT
+                        FROM unnest(string_to_array(raw_data.raw_data, ' ')) AS element
+                ) AS lvls
+        FROM raw_data;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION generate_permutations()
+RETURNS VOID AS $$
+DECLARE
+        report RECORD;
+        new_levels INT[];
+        i INT;
+BEGIN
+        FOR report IN SELECT * FROM reports WHERE NOT valid
+        LOOP
+                FOR i in 1..array_length(report.levels, 1)
+                LOOP
+                        new_levels := ARRAY(
+                                SELECT unnest(report.levels[1:i-1])
+                                UNION ALL
+                                SELECT unnest(report.levels[i+1:array_length(report.levels, 1)])
+                        );
+
+                        INSERT INTO reports (position, levels, original)
+                        VALUES (report.position, new_levels, FALSE);
+                END LOOP;
         END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 
 SELECT process_raw_data();
+SELECT generate_permutations();
 
-WITH deltas AS (
-        SELECT
-                abs(l1.level - l2.level) AS delta_abs
-                , CASE 
-                        WHEN (l1.level - l2.level) = 0 THEN 0
-                        ELSE (l1.level - l2.level) / abs(l1.level - l2.level)
-                END AS direction
-                , l1.position as l1_position
-                , l2.position as l2_position
-                , l1.report_id
-        FROM levels l1
-        INNER JOIN levels l2 ON l1.report_id = l2.report_id AND l2.position = l1.position + 1
-)
-, report_stats AS (
-        SELECT
-                report_id
-                , SUM(direction) AS dir_total
-                , COUNT(*) AS total
-                , COUNT(*) FILTER (WHERE delta_abs > 3) AS excess_levels
-        FROM deltas
-        GROUP BY report_id
-)
-, part1 AS (
+WITH part1 AS (
         SELECT
                 1 AS part
-                , COUNT(*) FILTER (
-                        WHERE 1=1
-                                AND abs(dir_total) = total
-                                AND excess_levels = 0
-                ) AS result
-        FROM report_stats
+                , COUNT(*) FILTER (WHERE valid AND original) AS result
+        FROM reports
 )
 , part2 AS (
-        WITH invalid_deltas AS (
-                SELECT
-                        *
-                        , min(l1_position) AS min_position
-                FROM deltas
-                WHERE 1=0
-                        OR direction = 0
-                        OR delta_abs > 3
-                GROUP BY 1,2,3,4,5
-                ORDER BY report_id
-        )
-        , fix1 AS (
-              SELECT
-                        d.report_id
-                        , SUM(d.direction) FILTER (WHERE d.l1_position != id.min_position) AS dir_total
-                        , COUNT(*) FILTER (WHERE d.l1_position != id.min_position) AS total
-                        , COUNT(*) FILTER (WHERE d.delta_abs > 3 AND d.l1_position != id.min_position) AS excess_levels
-                FROM deltas d
-                INNER JOIN invalid_deltas id on d.report_id = id.report_id
-                GROUP BY d.report_id
-        )
-        , fix2 AS (
-                SELECT
-                        d.report_id
-                        , SUM(d.direction) FILTER (WHERE d.l2_position != id.min_position + 1) AS dir_total
-                        , COUNT(*) FILTER (WHERE d.l2_position != id.min_position + 1) AS total
-                        , COUNT(*) FILTER (WHERE d.delta_abs > 3 AND d.l2_position != id.min_position + 1) AS excess_levels
-                FROM deltas d
-                INNER JOIN invalid_deltas id on d.report_id = id.report_id
-                GROUP BY d.report_id
-        )
-        , all_fixed AS (
-                SELECT
-                        1 AS fix_kind
-                        , report_id
-                        , (abs(dir_total) = total AND excess_levels = 0) AS valid
-                FROM fix1
-                UNION ALL
-                SELECT
-                        2 AS fix_kind
-                        , report_id
-                        , (abs(dir_total) = total AND excess_levels = 0) AS valid
-                FROM fix2
-        )
         SELECT
                 2 AS part
-                , (
-                        SELECT
-                                result
-                        FROM part1
-                ) + (
-                        count(*) FILTER (
-                                WHERE (fix_kind = 1 AND valid) OR (fix_kind = 2 AND valid)
-                        )
-                ) AS result
-        FROM all_fixed
+                , COUNT(DISTINCT position) FILTER (WHERE valid) AS result
+        FROM reports
 )
 
 SELECT * FROM part1
 UNION ALL
-SELECT * FROM part2
-ORDER BY part;
+SELECT * FROM part2;
+
+DROP TABLE IF EXISTS
+        raw_data
+        , reports;
+DROP FUNCTION IF EXISTS
+        process_raw_data
+        , generate_permutations
+        , check_validity_trigger_fn
+        , is_in_bound, is_strictly_decreasing
+        , is_strictly_increasing;
+DROP TRIGGER IF EXISTS
+        check_validity_after_insert ON reports;

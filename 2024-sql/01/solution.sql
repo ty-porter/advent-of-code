@@ -72,3 +72,6 @@ SELECT * FROM part1
 UNION ALL
 SELECT * FROM part2
 ORDER BY part;
+
+DROP TABLE IF EXISTS raw_data, lists;
+DROP FUNCTION IF EXISTS process_raw_data;
