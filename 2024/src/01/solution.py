@@ -17,7 +17,7 @@ def transform_prompt():
   list1 = []
   list2 = []
 
-  for line in  Prompt.read_to_list(__file__):
+  for line in Prompt.read_to_list(__file__):
     list1.append(int(line[0:5]))
     list2.append(int(line[8:13]))
 
