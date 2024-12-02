@@ -7,13 +7,6 @@ CREATE TABLE lists (
         PRIMARY KEY (position, list_id)
 );
 
-DROP TABLE IF EXISTS raw_data;
-
-CREATE TABLE raw_data (
-        position SERIAL PRIMARY KEY,
-        raw_data VARCHAR
-);
-
 CREATE OR REPLACE FUNCTION process_raw_data()
 RETURNS VOID AS $$
 DECLARE
@@ -33,10 +26,6 @@ BEGIN
         END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-
-COPY raw_data (raw_data)
-FROM 'C:\Users\tyler\development\advent-of-code\2024-sql\prompts\01.txt'
-WITH (FORMAT text);
 
 SELECT process_raw_data();
 
