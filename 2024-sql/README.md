@@ -6,7 +6,7 @@ This is an attempt to complete as much of AoC 2024 in SQL as possible.
 
 1. A PostgreSQL server (completed using PG 16.6)
 2. Some way to run commands against the server
-  - `psql` is recommended, other GUI-based tools would probably work
+    - `psql` is recommended, other GUI-based tools would probably work
 
 ## Usage
 
