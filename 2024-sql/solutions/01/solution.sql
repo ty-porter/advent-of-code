@@ -68,10 +68,13 @@ WITH part1 AS (
         LIMIT 1
 )
 
-SELECT * FROM part1
-UNION ALL
-SELECT * FROM part2
-ORDER BY part;
+SELECT
+        update_solution(1, results.part, results.result)
+FROM (
+        SELECT * FROM part1
+        UNION ALL
+        SELECT * FROM part2
+) AS results;
 
 DROP TABLE IF EXISTS raw_data, lists;
 DROP FUNCTION IF EXISTS process_raw_data;
