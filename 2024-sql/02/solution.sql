@@ -149,7 +149,8 @@ DROP FUNCTION IF EXISTS
         process_raw_data
         , generate_permutations
         , check_validity_trigger_fn
-        , is_in_bound, is_strictly_decreasing
+        , is_in_bound
+        , is_strictly_decreasing
         , is_strictly_increasing;
 DROP TRIGGER IF EXISTS
         check_validity_after_insert ON reports;
