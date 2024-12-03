@@ -28,7 +28,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER set_mod_amt_after_insert
-AFTER INSERT ON MEMORY
+AFTER INSERT ON memory
 FOR EACH ROW
 WHEN (NEW.operation = true)
 EXECUTE FUNCTION set_mod_amt_trigger_fn();
