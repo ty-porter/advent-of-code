@@ -2,7 +2,7 @@ import argparse, copy, importlib, os
 
 from src.utils import Color, colorize
 
-parser = argparse.ArgumentParser(prog = "Advent of Code 2024")
+parser = argparse.ArgumentParser(prog="Advent of Code 2024")
 parser.add_argument("solution", type=int, nargs="?")
 
 args = parser.parse_args()
@@ -10,7 +10,9 @@ args = parser.parse_args()
 solution_dirs = []
 
 if args.solution:
-    solution_dir = f"0{str(args.solution)}" if args.solution < 10 else str(args.solution)
+    solution_dir = (
+        f"0{str(args.solution)}" if args.solution < 10 else str(args.solution)
+    )
 
     if os.path.exists(f"src/{solution_dir}"):
         solution_dirs.append(f"src/{solution_dir}")
@@ -30,7 +32,7 @@ for index, solution_dir in enumerate(solution_dirs):
     values = solution_runner.transform_prompt()
 
     indent = " " * 2
-    
+
     if index > 0:
         print()
 
@@ -38,5 +40,13 @@ for index, solution_dir in enumerate(solution_dirs):
 
     print(indent + colorize(f"- DAY {day}", Color.CYAN))
 
-    print(indent * 3 + "Part 1: " + colorize(solution_runner.part_1_solution(copy.deepcopy(values)), Color.YELLOW))
-    print(indent * 3 + "Part 2: " + colorize(solution_runner.part_2_solution(copy.deepcopy(values)), Color.YELLOW))
+    print(
+        indent * 3
+        + "Part 1: "
+        + colorize(solution_runner.part_1_solution(copy.deepcopy(values)), Color.YELLOW)
+    )
+    print(
+        indent * 3
+        + "Part 2: "
+        + colorize(solution_runner.part_2_solution(copy.deepcopy(values)), Color.YELLOW)
+    )
