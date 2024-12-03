@@ -1,0 +1,1 @@
+psql postgresql://aoc:aoc@localhost:5432/aoc
