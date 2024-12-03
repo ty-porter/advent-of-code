@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS reports;
+DROP TABLE IF EXISTS memory;
 
 CREATE TABLE memory (
         id SERIAL PRIMARY KEY
