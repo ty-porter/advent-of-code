@@ -8,12 +8,15 @@ CREATE TABLE reports (
         , original BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE OR REPLACE FUNCTION is_in_bound(lvls INT[])
+CREATE OR REPLACE FUNCTION is_valid(lvls INT[])
 RETURNS BOOLEAN AS $$
 DECLARE
         i INT;
         delta INT;
+        magnitude INT;
 BEGIN
+        magnitude := 0;
+
         FOR i IN 1..(array_length(lvls, 1) - 1)
         LOOP
                 delta := lvls[i] - lvls[i + 1];
@@ -21,67 +24,29 @@ BEGIN
                 IF delta = 0 OR abs(delta) > 3 THEN
                         RETURN false;
                 END IF;
+
+                magnitude := magnitude + (delta / abs(delta));
         END LOOP;
 
-        RETURN true;
+        RETURN abs(magnitude) = array_length(lvls, 1) - 1;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION is_strictly_decreasing(lvls INT[])
-RETURNS BOOLEAN AS $$
-DECLARE
-        i INT;
-BEGIN
-        FOR i IN 1..(array_length(lvls, 1) - 1)
-        LOOP
-                IF lvls[i] - lvls[i + 1] >= 0 THEN
-                        RETURN false;
-                END IF;
-        END LOOP;
-
-        RETURN true;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION is_strictly_increasing(lvls INT[])
-RETURNS BOOLEAN AS $$
-DECLARE
-        i INT;
-BEGIN
-        FOR i IN 1..(array_length(lvls, 1) - 1)
-        LOOP
-                IF lvls[i] - lvls[i + 1] <= 0 THEN
-                        RETURN false;
-                END IF;
-        END LOOP;
-
-        RETURN true;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION check_validity_trigger_fn()
+CREATE OR REPLACE FUNCTION set_validity_trigger_fn()
 RETURNS TRIGGER AS $$
 BEGIN
         UPDATE reports
-        SET valid = (
-                is_in_bound(levels)
-                AND
-                (
-                        is_strictly_decreasing(levels)
-                        OR
-                        is_strictly_increasing(levels)
-                )
-        )
+        SET valid = is_valid(levels)
         WHERE id = NEW.id;
 
         RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER check_validity_after_insert
+CREATE OR REPLACE TRIGGER set_validity_after_insert
 AFTER INSERT ON reports
 FOR EACH ROW
-EXECUTE FUNCTION check_validity_trigger_fn();
+EXECUTE FUNCTION set_validity_trigger_fn();
 
 CREATE OR REPLACE FUNCTION process_raw_data()
 RETURNS VOID AS $$
@@ -152,9 +117,7 @@ DROP TABLE IF EXISTS
 DROP FUNCTION IF EXISTS
         process_raw_data
         , generate_permutations
-        , check_validity_trigger_fn
-        , is_in_bound
-        , is_strictly_decreasing
-        , is_strictly_increasing;
+        , set_validity_trigger_fn
+        , is_valid;
 DROP TRIGGER IF EXISTS
-        check_validity_after_insert ON reports;
+        set_validity_after_insert ON reports;
