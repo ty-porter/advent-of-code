@@ -7,5 +7,11 @@ class Color:
     CYAN = 36
 
 
+class Coord:
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+
 def colorize(text, color_code):
     return f"\033[{color_code}m{text}\033[0m"
