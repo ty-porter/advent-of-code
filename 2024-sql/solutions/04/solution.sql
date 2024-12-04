@@ -83,16 +83,87 @@ WITH part1 AS (
                         AND x.y + (2 * x.dy) = a.y
                 WHERE m.letter = 'M' AND a.letter = 'A'
         )
-
         SELECT 
                 1 AS part
                 , COUNT(*) AS result
         FROM xmas
 )
 , part2 AS (
+        WITH a AS (
+                SELECT * FROM crossword WHERE letter = 'A'
+        )
+        , forward_diag AS MATERIALIZED (
+                SELECT
+                        a.id
+                        , a.letter
+                        , a.x
+                        , a.y
+                        , d.id as did
+                        , d.letter AS dletter
+                        , d.x AS dx
+                        , d.y AS dy
+                FROM a
+                CROSS JOIN LATERAL (
+                        SELECT a.x - 1 AS x, a.y + 1 AS y
+                        UNION ALL
+                        SELECT a.x + 1 AS x, a.y - 1 AS y
+                ) diag
+                INNER JOIN crossword d
+                        ON diag.x = d.x
+                        AND diag.y = d.y
+                WHERE a.letter = 'A' AND d.letter in ('S', 'M')
+        )
+        , backward_diag AS MATERIALIZED (
+                SELECT
+                        a.id
+                        , a.letter
+                        , a.x
+                        , a.y
+                        , d.id as did
+                        , d.letter AS dletter
+                        , d.x AS dx
+                        , d.y AS dy
+                FROM a
+                CROSS JOIN LATERAL (
+                        SELECT a.x - 1 AS x, a.y - 1 AS y
+                        UNION ALL
+                        SELECT a.x + 1 AS x, a.y + 1 AS y
+                ) diag
+                INNER JOIN crossword d
+                        ON diag.x = d.x
+                        AND diag.y = d.y
+                WHERE a.letter = 'A' AND d.letter in ('S', 'M')
+        )
+        , diags AS (
+                SELECT
+                        id
+                        , SUM(letters) = 4 AS correct
+                FROM (
+                        SELECT
+                                id
+                                , COUNT(DISTINCT dletter) AS letters
+                        FROM forward_diag
+                        GROUP BY id
+                        UNION ALL
+                        SELECT
+                                id
+                                , COUNT(DISTINCT dletter) AS letters
+                        FROM backward_diag
+                        GROUP BY id
+                ) AS letters
+                GROUP BY id
+        )
+        , x_mas AS (
+                SELECT
+                        d.*
+                FROM a
+                INNER JOIN diags d on a.id = d.id
+        )
         SELECT
                 2 AS part
-                , 0 AS result
+                , COUNT(*)
+        FROM x_mas
+        WHERE correct
 )
 
 SELECT
