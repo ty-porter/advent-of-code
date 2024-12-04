@@ -35,33 +35,59 @@ $$ LANGUAGE plpgsql;
 SELECT process_raw_data();
 
 WITH part1 AS (
-        WITH xm AS (
-                SELECT x.x AS xx, x.y AS xy, m.x AS mx, m.y AS my FROM crossword x
-                INNER JOIN crossword m ON abs(x.x - m.x) <= 1 AND abs(x.y - m.y) <= 1
-                WHERE x.letter = 'X' AND m.letter = 'M'
+        WITH xs_pairs AS MATERIALIZED (
+                SELECT 
+                        x.x
+                        , x.y
+                        , s.x AS sx
+                        , s.y AS sy
+                        , CASE WHEN s.x - x.x != 0
+                                THEN abs(s.x - x.x) / (s.x - x.x)
+                                ELSE 0
+                        END AS dx
+                        , CASE WHEN s.y - x.y != 0
+                                THEN abs(s.y - x.y) / (s.y - x.y)
+                                ELSE 0
+                        END AS dy
+                FROM crossword x
+                CROSS JOIN LATERAL (
+                        SELECT x + 3 AS sx, y AS sy
+                        UNION ALL
+                        SELECT x - 3 AS sx, y AS sy
+                        UNION ALL
+                        SELECT x AS sx, y + 3 AS sy
+                        UNION ALL
+                        SELECT x AS sx, y - 3 AS sy
+                        UNION ALL
+                        SELECT x + 3 AS sx, y + 3 AS sy
+                        UNION ALL
+                        SELECT x + 3 AS sx, y - 3 AS sy
+                        UNION ALL
+                        SELECT x - 3 AS sx, y + 3 AS sy
+                        UNION ALL
+                        SELECT x - 3 AS sx, y - 3 AS sy
+                ) possible_positions
+                INNER JOIN crossword s
+                        ON possible_positions.sx = s.x AND possible_positions.sy = s.y
+                WHERE x.letter = 'X' AND s.letter = 'S'
         )
         , xmas AS (
                 SELECT 
-                        EXISTS(
-                                SELECT 1 FROM crossword a
-                                WHERE a.letter = 'A'
-                                        AND xm.mx - xm.xx = a.x - xm.mx AND xm.my - xm.xy = a.y - xm.my
-                                LIMIT 1
-                        )
-                        AND
-                        EXISTS(
-                                SELECT 1 FROM crossword s
-                                WHERE s.letter = 'S'
-                                        AND (xm.mx - xm.xx) * 2 = s.x - xm.mx AND (xm.my - xm.xy) * 2 = s.y - xm.my
-                                LIMIT 1
-                        ) AS found
-                FROM xm
+                        x.*
+                FROM xs_pairs x
+                INNER JOIN crossword m 
+                        ON x.x + x.dx = m.x
+                        AND x.y + x.dy = m.y
+                INNER JOIN crossword a
+                        ON x.x + (2 * x.dx) = a.x
+                        AND x.y + (2 * x.dy) = a.y
+                WHERE m.letter = 'M' AND a.letter = 'A'
         )
-        SELECT
+
+        SELECT 
                 1 AS part
                 , COUNT(*) AS result
         FROM xmas
-        WHERE found = true
 )
 , part2 AS (
         SELECT
