@@ -17,7 +17,7 @@ class Coord:
 
     def __str__(self):
         return f"<Coord ({self.x}, {self.y})>"
-    
+
     def __repr__(self):
         return self.__str__()
 
