@@ -12,8 +12,14 @@ class Coord:
         self.x = x
         self.y = y
 
+    def to_tuple(self):
+        return (self.x, self.y)
+
     def __str__(self):
-        return f"({self.x}, {self.y})"
+        return f"<Coord ({self.x}, {self.y})>"
+    
+    def __repr__(self):
+        return self.__str__()
 
 
 def colorize(text, color_code):
