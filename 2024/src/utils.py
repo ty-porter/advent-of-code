@@ -12,6 +12,9 @@ class Coord:
         self.x = x
         self.y = y
 
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
 
 def colorize(text, color_code):
     return f"\033[{color_code}m{text}\033[0m"
