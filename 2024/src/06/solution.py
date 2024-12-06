@@ -17,13 +17,17 @@ def generate_path(start, grid, hash_fn, obstacle=None, start_direction=None):
     guard = Position2D(start.x, start.y)
 
     if start_direction is not None:
-        d = start_direction
         start_idx = DIRECTIONS.index(start_direction)
-        direction = islice(cycle(DIRECTIONS), start_idx, start_idx + len(DIRECTIONS))
+        direction = cycle(DIRECTIONS[start_idx:] + DIRECTIONS[0:start_idx])
+
+        d = next(direction)
+
+        assert d == start_direction
     else:
         direction = cycle(DIRECTIONS)
 
-    d = next(direction)
+        d = next(direction)
+
     path = {}
 
     while (
@@ -72,23 +76,26 @@ def part_2_solution(args):
     guard, grid = args
 
     hash_guard_dir = lambda g, d: (g, d)
-    path, _ = generate_path(guard, grid, hash_guard_dir)
 
     total = 0
 
-    for node in path:
-        guard2, direction = node
-        obstacle = Position2D(guard2.x + direction.x, guard2.y + direction.y)
-        _, is_cycle = generate_path(guard2, grid, hash_guard_dir, obstacle, direction)
+    for y, row in enumerate(grid):
+        for x, c in enumerate(row):
+            if c in [OBSTACLE, GUARD]:
+                continue
 
-        if is_cycle:
-            total += 1
+            guard2 = Position2D(guard.x, guard.y)
+            obstacle = Position2D(x, y)
+            _, is_cycle = generate_path(guard2, grid, hash_guard_dir, obstacle)
+
+            if is_cycle:
+                total += 1
 
     return total
 
 
 def transform_prompt():
-    grid = Prompt.read_to_grid(__file__, test=True)
+    grid = Prompt.read_to_grid(__file__)
 
     for y, row in enumerate(grid):
         for x, c in enumerate(row):
