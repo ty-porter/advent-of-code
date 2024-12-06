@@ -1,24 +1,28 @@
 from src.prompt import Prompt
-from src.utils import Coord
+from src.utils import Direction2D, Position2D
 
-import itertools
-
-Dir = Pos = Coord
+from itertools import cycle, islice
 
 GUARD = "^"
 OBSTACLE = "#"
 DIRECTIONS = [
-    Dir(0, -1),  # up
-    Dir(1, 0),  # right
-    Dir(0, 1),  # down
-    Dir(-1, 0),  # left
+    Direction2D(0, -1),  # up
+    Direction2D(1, 0),  # right
+    Direction2D(0, 1),  # down
+    Direction2D(-1, 0),  # left
 ]
 
 
-def generate_path(start, grid, hash_fn, obstacle=None):
-    guard = Pos(start.x, start.y)
+def generate_path(start, grid, hash_fn, obstacle=None, start_direction=None):
+    guard = Position2D(start.x, start.y)
 
-    direction = itertools.cycle(DIRECTIONS)
+    if start_direction is not None:
+        d = start_direction
+        start_idx = DIRECTIONS.index(start_direction)
+        direction = islice(cycle(DIRECTIONS), start_idx, start_idx + len(DIRECTIONS))
+    else:
+        direction = cycle(DIRECTIONS)
+
     d = next(direction)
     path = {}
 
@@ -45,8 +49,7 @@ def generate_path(start, grid, hash_fn, obstacle=None):
         elif grid[guard.y + d.y][guard.x + d.x] == OBSTACLE:
             d = next(direction)
         else:
-            guard.x += d.x
-            guard.y += d.y
+            guard += d
 
     if hash_fn(guard, d) in path:
         path[hash_fn(guard, d)].append(d)
@@ -59,7 +62,7 @@ def generate_path(start, grid, hash_fn, obstacle=None):
 def part_1_solution(args):
     guard, grid = args
 
-    hash_guard = lambda guard, _: (guard.x, guard.y)
+    hash_guard = lambda g, _: g
     path, _ = generate_path(guard, grid, hash_guard)
 
     return len(list(path.keys()))
@@ -68,23 +71,17 @@ def part_1_solution(args):
 def part_2_solution(args):
     guard, grid = args
 
-    hash_guard_dir = lambda guard, direction: (
-        guard.x,
-        guard.y,
-        direction.x,
-        direction.y,
-    )
+    hash_guard_dir = lambda g, d: (g, d)
     path, _ = generate_path(guard, grid, hash_guard_dir)
 
     total = 0
 
     for node in path:
-        guard2 = Pos(node[0], node[1])
-        obstacle = Pos(node[0] + node[2], node[1] + node[3])
-        _, is_cycle = generate_path(guard2, grid, hash_guard_dir, obstacle)
+        guard2, direction = node
+        obstacle = Position2D(guard2.x + direction.x, guard2.y + direction.y)
+        _, is_cycle = generate_path(guard2, grid, hash_guard_dir, obstacle, direction)
 
         if is_cycle:
-            print(obstacle, guard2, (node[2], node[3]))
             total += 1
 
     return total
@@ -96,4 +93,4 @@ def transform_prompt():
     for y, row in enumerate(grid):
         for x, c in enumerate(row):
             if c == GUARD:
-                return Pos(x, y), grid
+                return Position2D(x, y), grid

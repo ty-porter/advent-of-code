@@ -1,28 +1,26 @@
 from src.prompt import Prompt
-from src.utils import Coord
+from src.utils import Direction2D, Position2D
 
 XMAS = "XMAS"
 X_MAS = "AMS"  # Sorted MAS
 
-Dir = Pos = Coord
-
 
 def find_target(target, grid, x, y):
     dirs = [
-        Dir(0, 1),  #  N
-        Dir(0, -1),  #  S
-        Dir(-1, 0),  #  W
-        Dir(1, 0),  #  E
-        Dir(1, 1),  # NE
-        Dir(1, -1),  # SE
-        Dir(-1, -1),  # SW
-        Dir(-1, 1),  # NW
+        Direction2D(0, 1),  #  N
+        Direction2D(0, -1),  #  S
+        Direction2D(-1, 0),  #  W
+        Direction2D(1, 0),  #  E
+        Direction2D(1, 1),  # NE
+        Direction2D(1, -1),  # SE
+        Direction2D(-1, -1),  # SW
+        Direction2D(-1, 1),  # NW
     ]
 
     total = 0
 
     for d in dirs:
-        pos = Pos(x, y)
+        pos = Position2D(x, y)
         search = ""
 
         for _ in range(len(target)):
