@@ -1,17 +1,12 @@
-import argparse, copy, importlib, os
+import copy, importlib, os
 
-from src.utils import Color, colorize
-
-parser = argparse.ArgumentParser(prog="Advent of Code 2024")
-parser.add_argument("solution", type=int, nargs="?")
-
-args = parser.parse_args()
+from src.utils import Color, colorize, cliargs
 
 solution_dirs = []
 
-if args.solution:
+if cliargs.solution:
     solution_dir = (
-        f"0{str(args.solution)}" if args.solution < 10 else str(args.solution)
+        f"0{str(cliargs.solution)}" if cliargs.solution < 10 else str(cliargs.solution)
     )
 
     if os.path.exists(f"src/{solution_dir}"):

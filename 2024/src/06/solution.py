@@ -1,5 +1,5 @@
 from src.prompt import Prompt
-from src.utils import Direction2D, Position2D
+from src.utils import Direction2D, Position2D, skippable
 
 from itertools import cycle, islice
 
@@ -71,7 +71,7 @@ def part_1_solution(args):
 
     return len(list(path.keys()))
 
-
+@skippable("06p2")
 def part_2_solution(args):
     guard, grid = args
 
