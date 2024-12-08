@@ -8,7 +8,9 @@ PROMPT_NAME = "prompt.txt"
 max_solution = 0
 
 for solution_dir in os.listdir(SOURCE_DIRECTORY):
-    if not os.path.isdir(f"{SOURCE_DIRECTORY}/{solution_dir}") or re.match(solution_dir, "\D"):
+    if not os.path.isdir(f"{SOURCE_DIRECTORY}/{solution_dir}") or re.match(
+        solution_dir, "\D"
+    ):
         continue
 
     if solution_dir == "__pycache__":

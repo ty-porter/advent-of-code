@@ -71,6 +71,7 @@ def part_1_solution(args):
 
     return len(list(path.keys()))
 
+
 @skippable("06p2")
 def part_2_solution(args):
     guard, grid = args
