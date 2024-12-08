@@ -94,6 +94,6 @@ def skippable(ID):
 
     return decorator
 
-def print_2d_grid(grid):
+def print_2d_grid(grid, sep=""):
     for row in grid:
-        print(row)
+        print(sep.join(row))
