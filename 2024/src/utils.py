@@ -8,6 +8,7 @@ parser.add_argument("--no-skip", type=str, nargs="*")
 
 cliargs = parser.parse_args()
 
+
 class Color:
     RED = 31
     GREEN = 32
@@ -25,9 +26,9 @@ class Vec2:
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return (self.x, self.y) == (other.x, other.y)
-        
+
         return False
-    
+
     def __hash__(self):
         return hash((self.x, self.y))
 
@@ -61,7 +62,7 @@ class Vec2:
 
     def __repr__(self):
         return self.__str__()
-    
+
     def __id__(self):
         return self.__str__()
 
@@ -77,15 +78,18 @@ class Position2D(Vec2):
 def colorize(text, color_code):
     return f"\033[{color_code}m{text}\033[0m"
 
+
 def skippable(ID):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cliargs.no_skip is None or (len(cliargs.no_skip) > 0 and ID not in cliargs.no_skip):
+            if cliargs.no_skip is None or (
+                len(cliargs.no_skip) > 0 and ID not in cliargs.no_skip
+            ):
                 return f"< Skipped >\tPass --no-skip {ID} to run."
 
             return func(*args, **kwargs)
-        
+
         return wrapper
-    
+
     return decorator
