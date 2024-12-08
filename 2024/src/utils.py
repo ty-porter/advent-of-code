@@ -93,3 +93,7 @@ def skippable(ID):
         return wrapper
 
     return decorator
+
+def print_2d_grid(grid):
+    for row in grid:
+        print(row)
