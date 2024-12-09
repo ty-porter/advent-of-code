@@ -5,8 +5,10 @@ from src.utils import Position2D
 def generate_antinodes(p1, p2, bounds, fn):
     return fn(p1, p2, bounds) + fn(p2, p1, bounds)
 
+
 def inbounds(pos, bounds):
     return pos.x >= 0 and pos.x < bounds.x and pos.y >= 0 and pos.y < bounds.y
+
 
 def find_antinodes(antennae, bounds, gen_fn):
     antinodes = {}
@@ -31,8 +33,10 @@ def find_antinodes(antennae, bounds, gen_fn):
 
     return len(valid_antinodes)
 
+
 def part_1_solution(args):
     return find_antinodes(*args, lambda x, y, _: [x + (x - y)])
+
 
 def part_2_solution(args):
     def _generate_antinodes(p1, p2, bounds):
@@ -56,7 +60,7 @@ def transform_prompt():
 
     for y, row in enumerate(grid):
         for x, c in enumerate(row):
-            if c != '.':
+            if c != ".":
                 if c in ant:
                     ant[c].append(Position2D(x, y))
                 else:
