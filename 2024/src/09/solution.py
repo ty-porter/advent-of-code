@@ -71,7 +71,6 @@ def transform_prompt():
             free = int(raw_map[i + 1])
 
         block = int(raw_map[i])
-        # disk_map[ID] = {"segment": (str(chr(ID)) * block), "free": free}
         disk_map[ID] = DiskFragment((str(chr(ID)) * block), free)
         ID += 1
 
