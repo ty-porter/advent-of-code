@@ -61,6 +61,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION generate_correct_pageset(pages INT[])
+RETURNS INT[] AS $$
+DECLARE
+        p1 INT;
+        p2 INT;
+        i INT;
+        j INT;
+BEGIN
+        FOR i IN 1..array_length(pages, 1) LOOP
+                FOR j IN i+1..array_length(pages, 1) LOOP
+                        p1 := pages[i];
+                        p2 := pages[j];
+
+                        IF EXISTS (SELECT 1 FROM rules WHERE before_node = p2 AND after_node = p1) THEN
+                                pages[i] := p2;
+                                pages[j] := p1;
+
+                                RETURN generate_correct_pageset(pages);
+                        END IF;
+                END LOOP;
+        END LOOP;
+
+        return pages;
+END;
+$$ LANGUAGE plpgsql;
+
 SELECT process_raw_data();
 SELECT find_correct_pagesets();
 
@@ -71,97 +97,17 @@ WITH part1 AS (
         FROM pagesets
         WHERE valid
 )
--- This takes a VERY long time to run.
 , part2 AS (
-        WITH relevant_rules as (
+        WITH corrected_pagesets AS (
                 SELECT
-                        p.id
-                        , r.id AS rule_id
-                        , array_position(p.pages, r.before_node) AS before_idx
-                        , array_position(p.pages, r.after_node) AS after_idx
-                        , r.before_node
-                        , r.after_node
-                        , r.rule_text
-                FROM rules r
-                INNER JOIN pagesets p 
-                        ON r.before_node = ANY(p.pages) AND r.after_node = ANY(p.pages)
+                        generate_correct_pageset(pages) AS pages
+                FROM pagesets
+                WHERE NOT valid
         )
-        , pageset_validity AS (
-                SELECT
-                        id
-                        , COUNT(*) != COUNT(*) FILTER(WHERE r.before_idx < r.after_idx) AS invalid
-                FROM relevant_rules r
-                GROUP BY id
-        )
-        , invalid_pagesets AS (
-                SELECT
-                        p.*
-                FROM pagesets p
-                INNER JOIN pageset_validity pv on p.id = pv.id
-                WHERE pv.invalid
-        )
-        , sorted_pagesets AS (
-                WITH RECURSIVE sp AS (
-                        -- base case
-                        SELECT
-                                ip.id
-                                , ip.pages
-                                , 0 AS iter
-                                , -1 AS before_node
-                                , -1 AS after_node
-                                , '' AS rule_text
-                                , ARRAY[]::INT[] AS applied_rules
-                        FROM invalid_pagesets ip
-
-                        UNION ALL
-                        
-                        -- iteration
-                        SELECT
-                                sp.id
-                                , ARRAY(
-                                        SELECT
-                                                CASE
-                                                        WHEN i = array_position(sp.pages, r.before_node) THEN r.after_node
-                                                        WHEN i = array_position(sp.pages, r.after_node) THEN r.before_node
-                                                        ELSE v
-                                                END
-                                        FROM unnest(sp.pages) WITH ORDINALITY AS t(v, i)
-                                ) AS pages
-                                , sp.iter + 1 AS iter
-                                , r.before_node
-                                , r.after_node
-                                , r.rule_text
-                                , ARRAY(
-                                        SELECT * FROM unnest(sp.applied_rules)
-                                        UNION
-                                        SELECT r.rule_id
-                                ) AS applied_rules
-                        FROM sp
-                        INNER JOIN relevant_rules r
-                                ON sp.id = r.id
-                                AND r.before_node = ANY(sp.pages)
-                                AND r.after_node = ANY(sp.pages)
-                                AND array_position(sp.pages, r.before_node) > array_position(sp.pages, r.after_node)
-                                AND array_position(sp.applied_rules, r.rule_id) IS NULL
-                )
-                SELECT * FROM sp
-        )
-        , pageset_max_iter AS (
-                SELECT id, max(iter) AS max_iter FROM sorted_pagesets GROUP BY id
-        )
-        , ranked_sorted_pagesets AS (
-                SELECT
-                        s.*
-                        , ROW_NUMBER() OVER (PARTITION BY s.id ORDER BY s.iter DESC) AS rank
-                FROM sorted_pagesets s
-                INNER JOIN pageset_max_iter p ON s.id = p.id AND s.id = p.id
-                ORDER BY s.id ASC, s.iter DESC
-        )
-
         SELECT
                 2 AS part
                 , sum(pages[(array_length(pages, 1) /  2) + 1]) AS result
-        FROM ranked_sorted_pagesets WHERE rank = 1
+        FROM corrected_pagesets
 )
 
 SELECT
@@ -178,6 +124,7 @@ DROP TABLE IF EXISTS
         , pagesets;
 DROP FUNCTION IF EXISTS
         process_raw_data
-        , find_correct_pagesets;
+        , find_correct_pagesets
+        , generate_correct_pageset;
 DROP INDEX IF EXISTS
         pages_gin_idx;

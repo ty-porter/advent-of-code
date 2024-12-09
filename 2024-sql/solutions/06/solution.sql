@@ -87,6 +87,7 @@ $$ LANGUAGE plpgsql;
 
 SELECT
         update_solution(6, 1, COUNT(DISTINCT (x, y)))
+        , update_solution(6, 2, '<SKIPPED>'::TEXT)
 FROM traverse();
 
 DROP FUNCTION IF EXISTS
