@@ -1,5 +1,12 @@
 from src.prompt import Prompt
+from dataclasses import dataclass
 import copy
+
+
+@dataclass
+class DiskFragment:
+    blocks: str
+    free: int
 
 
 def part_1_solution(args):
@@ -14,33 +21,33 @@ def part_1_solution(args):
         head = disk[hptr]
         tail = disk[tptr]
 
-        if head["free"] == 0:
+        if head.free == 0:
             hptr += 1
             continue
 
-        hfree = head["free"]
-        tsize = len(tail["segment"])
+        hfree = head.free
+        tsize = len(tail.blocks)
 
         if hfree >= tsize:
-            head["segment"] += tail["segment"]
-            head["free"] -= tsize
+            head.blocks += tail.blocks
+            head.free -= tsize
 
             del disk[tptr]
 
             tptr -= 1
 
-            disk[tptr]["free"] += tsize
+            disk[tptr].free += tsize
         else:
-            head["segment"] += tail["segment"][:hfree]
-            head["free"] = 0
+            head.blocks += tail.blocks[:hfree]
+            head.free = 0
 
-            tail["segment"] = tail["segment"][: (tsize - hfree)]
+            tail.blocks = tail.blocks[: (tsize - hfree)]
 
     total = 0
     i = 0
 
     for _, frag in disk.items():
-        for c in frag["segment"]:
+        for c in frag.blocks:
             total += i * ord(c)
             i += 1
 
@@ -64,7 +71,8 @@ def transform_prompt():
             free = int(raw_map[i + 1])
 
         block = int(raw_map[i])
-        disk_map[ID] = {"segment": (str(chr(ID)) * block), "free": free}
+        # disk_map[ID] = {"segment": (str(chr(ID)) * block), "free": free}
+        disk_map[ID] = DiskFragment((str(chr(ID)) * block), free)
         ID += 1
 
     return disk_map, ID - 1
