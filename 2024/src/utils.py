@@ -74,6 +74,20 @@ class Direction2D(Vec2):
 class Position2D(Vec2):
     pass
 
+CARDINAL_2D = [
+    Direction2D( 0,  1),
+    Direction2D( 1,  0),
+    Direction2D( 0, -1),
+    Direction2D(-1,  0)
+]
+
+DIAGONAL_2D = [
+    Direction2D( 1,  1),
+    Direction2D(-1, -1),
+    Direction2D( 1, -1),
+    Direction2D(-1,  1)
+]
+
 
 def colorize(text, color_code):
     return f"\033[{color_code}m{text}\033[0m"
@@ -97,4 +111,4 @@ def skippable(ID):
 
 def print_2d_grid(grid, sep=""):
     for row in grid:
-        print(sep.join(row))
+        print(sep.join(str(c) for c in row))
