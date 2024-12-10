@@ -39,13 +39,13 @@ def bfs(grid, position):
             if v2 == v1 + 1:
                 queue.append(p2)
 
-    return nines, paths
+    return len(nines.keys()), paths
 
 
 def part_1_solution(args):
     grid, trailheads = args
 
-    return sum(len(bfs(grid, thead)[0].keys()) for thead in trailheads)
+    return sum(bfs(grid, thead)[0] for thead in trailheads)
 
 
 def part_2_solution(args):
