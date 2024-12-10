@@ -74,18 +74,19 @@ class Direction2D(Vec2):
 class Position2D(Vec2):
     pass
 
+
 CARDINAL_2D = [
-    Direction2D( 0,  1),
-    Direction2D( 1,  0),
-    Direction2D( 0, -1),
-    Direction2D(-1,  0)
+    Direction2D(0, 1),
+    Direction2D(1, 0),
+    Direction2D(0, -1),
+    Direction2D(-1, 0),
 ]
 
 DIAGONAL_2D = [
-    Direction2D( 1,  1),
+    Direction2D(1, 1),
     Direction2D(-1, -1),
-    Direction2D( 1, -1),
-    Direction2D(-1,  1)
+    Direction2D(1, -1),
+    Direction2D(-1, 1),
 ]
 
 

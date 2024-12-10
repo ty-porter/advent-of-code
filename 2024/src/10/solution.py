@@ -7,12 +7,13 @@ from collections import deque
 def grid_at(grid, x, y):
     if y < 0 or y >= len(grid):
         return None
-    
+
     if x < 0 or x >= len(grid[0]):
         return None
-    
+
     return grid[y][x]
-    
+
+
 def bfs(grid, position):
     queue = deque([position])
 
@@ -34,16 +35,18 @@ def bfs(grid, position):
             p2 = p1 + d
 
             v2 = grid_at(grid, p2.x, p2.y)
-            
+
             if v2 == v1 + 1:
                 queue.append(p2)
 
     return nines, paths
 
+
 def part_1_solution(args):
     grid, trailheads = args
 
     return sum(len(bfs(grid, thead)[0].keys()) for thead in trailheads)
+
 
 def part_2_solution(args):
     grid, trailheads = args
@@ -61,7 +64,7 @@ def transform_prompt():
         for x, c in enumerate(row):
             nrow.append(int(c))
 
-            if c == '0':
+            if c == "0":
                 theads.append(Position2D(x, y))
 
         grid.append(nrow)
