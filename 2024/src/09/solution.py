@@ -1,55 +1,36 @@
 from src.prompt import Prompt
-from dataclasses import dataclass
 import copy
 
+# . collides with ID = 47
+SPACE = chr(0x101111)
 
-@dataclass
-class DiskFragment:
-    blocks: str
-    free: int
-
-
-def part_1_solution(args):
-    disk, max_ID = args
-    # Must copy, we will be deleting from this dict.
-    disk = copy.deepcopy(disk)
+def part_1_solution(_disk):
+    # Must copy, we will be mutating it.
+    disk = copy.deepcopy(_disk)
 
     hptr = 0
-    tptr = max_ID
+    tptr = len(disk) - 1
 
     while hptr < tptr:
         head = disk[hptr]
         tail = disk[tptr]
 
-        if head.free == 0:
+        if head != SPACE:
             hptr += 1
             continue
-
-        hfree = head.free
-        tsize = len(tail.blocks)
-
-        if hfree >= tsize:
-            head.blocks += tail.blocks
-            head.free -= tsize
-
-            del disk[tptr]
-
+        
+        if tail == SPACE:
             tptr -= 1
+            continue
 
-            disk[tptr].free += tsize
-        else:
-            head.blocks += tail.blocks[:hfree]
-            head.free = 0
-
-            tail.blocks = tail.blocks[: (tsize - hfree)]
+        disk[hptr] = disk[tptr]
+        disk[tptr] = SPACE
 
     total = 0
-    i = 0
 
-    for _, frag in disk.items():
-        for c in frag.blocks:
-            total += i * ord(c)
-            i += 1
+    for i, ID in enumerate(disk):
+        if ID != SPACE:
+            total += i * ord(ID)
 
     return total
 
@@ -60,7 +41,7 @@ def part_2_solution(disk):
 
 def transform_prompt():
     raw_map = Prompt.read(__file__)
-    disk_map = {}
+    disk = []
 
     ID = 0
 
@@ -70,8 +51,10 @@ def transform_prompt():
         else:
             free = int(raw_map[i + 1])
 
-        block = int(raw_map[i])
-        disk_map[ID] = DiskFragment((str(chr(ID)) * block), free)
+        blocks = chr(ID) * int(raw_map[i])
+        spaces = SPACE * free
+
+        disk.extend(list(blocks + spaces))
         ID += 1
 
-    return disk_map, ID - 1
+    return disk
