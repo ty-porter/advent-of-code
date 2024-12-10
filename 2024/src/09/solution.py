@@ -1,8 +1,8 @@
 from src.prompt import Prompt
 import copy
 
-# . collides with ID = 47
-SPACE = chr(0x101111)
+# . collides with ID = 47, so use the max Unicode code point
+SPACE = chr(0x10FFFF)
 
 def part_1_solution(_disk):
     # Must copy, we will be mutating it.
