@@ -13,17 +13,19 @@ def grid_at(grid, x, y):
     
     return grid[y][x]
     
-def bfs_reachable(grid, position):
+def bfs(grid, position):
     queue = deque([position])
 
-    found = {}
+    nines = {}
+    paths = 0
 
     while queue:
         p1 = queue.popleft()
         v1 = grid_at(grid, p1.x, p1.y)
 
         if v1 == 9:
-            found[p1] = 1
+            nines[p1] = 1
+            paths += 1
             continue
         elif v1 == None:
             continue
@@ -36,42 +38,17 @@ def bfs_reachable(grid, position):
             if v2 == v1 + 1:
                 queue.append(p2)
 
-    return len(found.keys())
-
-def bfs_total_paths(grid, position):
-    queue = deque([(position, [])])
-
-    found = 0
-
-    while queue:
-        p1, path = queue.popleft()
-        v1 = grid_at(grid, p1.x, p1.y)
-
-        if v1 == 9:
-            found += 1
-            continue
-        elif v1 == None:
-            continue
-
-        for d in CARDINAL_2D:
-            p2 = p1 + d
-
-            v2 = grid_at(grid, p2.x, p2.y)
-
-            if v2 == v1 + 1:
-                queue.append((p2))
-
-    return found
+    return nines, paths
 
 def part_1_solution(args):
     grid, trailheads = args
 
-    return sum(bfs_reachable(grid, thead) for thead in trailheads)
+    return sum(len(bfs(grid, thead)[0].keys()) for thead in trailheads)
 
 def part_2_solution(args):
     grid, trailheads = args
 
-    return sum(bfs_total_paths(grid, thead) for thead in trailheads)
+    return sum(bfs(grid, thead)[1] for thead in trailheads)
 
 
 def transform_prompt():
