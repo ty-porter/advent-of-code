@@ -95,9 +95,13 @@ WITH RECURSIVE bfs AS (
         WHERE n = 9
 )
 
-SELECT * FROM part1
-UNION ALL
-SELECT * FROM part2;
+SELECT
+        update_solution(10, results.part, results.result)
+FROM (
+        SELECT * FROM part1
+        UNION ALL
+        SELECT * FROM part2
+) AS results;
 
 DROP FUNCTION IF EXISTS
         process_raw_data;
