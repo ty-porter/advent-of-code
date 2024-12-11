@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS filesystem;
+DROP TABLE IF EXISTS filesystem, defragged_fs CASCADE;
 
 CREATE SEQUENCE IF NOT EXISTS fs_sequence START 1;
 
@@ -108,12 +108,99 @@ WITH part1 AS (
 )
 
 SELECT update_solution(9, results.part, results.result) FROM part1 results;
-SELECT update_solution(9, 2, '<SKIPPED>'::TEXT);
+
+CREATE OR REPLACE FUNCTION defrag()
+RETURNS VOID AS $$
+DECLARE
+        bid INT;
+        bdsz INT;
+        bid_start INT;
+        range_start INT;
+        range_end INT;
+BEGIN
+        SELECT
+                max(f.block_id) INTO bid
+        FROM filesystem f;
+
+        FOR bid IN
+                SELECT
+                        DISTINCT(f.block_id)
+                FROM filesystem f
+                WHERE f.block_id != -1
+                ORDER BY f.block_id DESC
+        LOOP
+                SELECT count(*) INTO bdsz FROM filesystem f WHERE f.block_id = bid;
+                SELECT min(pos) INTO bid_start FROM filesystem f WHERE f.block_id = bid;
+
+                SELECT
+                        fr.range_start, fr.range_end
+                INTO
+                        range_start, range_end
+                FROM free_ranges fr
+                WHERE sz >= bdsz AND fr.range_end < bid_start
+                ORDER BY fr.range_start ASC
+                LIMIT 1;
+
+                IF range_start IS NOT NULL THEN
+                        UPDATE defragged_fs
+                        SET block_id = -1
+                        WHERE block_id = bid;
+
+                        UPDATE defragged_fs
+                        SET block_id = bid
+                        WHERE pos BETWEEN range_start AND range_start + bdsz - 1;
+                END IF;
+        END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE defragged_fs AS
+SELECT * FROM filesystem;
+
+ALTER TABLE
+        defragged_fs
+ADD CONSTRAINT unique_defrag_pos
+UNIQUE (pos);
+
+CREATE OR REPLACE VIEW free_ranges AS (
+        WITH consecutive_free AS (
+                SELECT
+                        DISTINCT(pos)
+                        , block_id
+                        , pos - ROW_NUMBER() OVER (ORDER BY pos) AS group_id
+                FROM defragged_fs
+                WHERE block_id = -1
+        )
+        , ranges AS (
+                SELECT
+                        min(pos) AS range_start
+                        , max(pos) AS range_end
+                FROM consecutive_free
+                GROUP BY group_id
+        )
+        SELECT
+                range_start
+                , range_end
+                , range_end - range_start + 1 AS sz
+        FROM ranges
+        ORDER BY range_start
+);
+
+SELECT defrag();
+
+SELECT
+        update_solution(9, 2, sum(pos * block_id))
+FROM defragged_fs AS resuts
+WHERE block_id >= 0;
 
 DROP FUNCTION IF EXISTS
-        process_raw_data;
+        process_raw_data
+        , defrag;
+DROP VIEW IF EXISTS
+        free_ranges;
 DROP TABLE IF EXISTS
         raw_data
-        , filesystem;
+        , filesystem
+        , defragged_fs;
 DROP SEQUENCE IF EXISTS
         fs_sequence;
