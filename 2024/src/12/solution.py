@@ -1,5 +1,5 @@
 from src.prompt import Prompt
-from src.utils import Position2D, CARDINAL_2D
+from src.utils import Position2D, CARDINAL_2D_CW
 
 from collections import deque
 
@@ -32,7 +32,7 @@ class Region:
         for position in self.positions:
             perimeter = 4
 
-            for d in CARDINAL_2D:
+            for d in CARDINAL_2D_CW:
                 if position + d in self.positions:
                     perimeter -= 1
 
@@ -48,7 +48,8 @@ class Region:
         
         total = 0
 
-        pos = self.start 
+        direction = CARDINAL_2D_CW[0]
+        pos = self.start + direction
 
         self._sides = total
 
@@ -69,7 +70,7 @@ class Region:
             if grid[position.y][position.x] == target:
                 found[position] = 1
 
-            for d in CARDINAL_2D:
+            for d in CARDINAL_2D_CW:
                 p = position + d
                 
                 y_in_bound = p.y >= 0 and p.y < len(grid)
