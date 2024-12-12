@@ -4,9 +4,15 @@ from src.utils import Position2D, CARDINAL_2D
 from collections import deque
 
 class Region:
-    def __init__(self, letter, positions):
+    def __init__(self, letter, positions, start):
         self.letter = letter
         self.positions = positions
+
+        # By iteration order this will always be a top left corner.
+        self.start = start
+
+        self._perimeter = None
+        self._sides = None
 
     @property
     def price(self):
@@ -15,9 +21,12 @@ class Region:
     @property
     def area(self):
         return len(self.positions)
-    
+
     @property
     def perimeter(self):
+        if self._perimeter is not None:
+            return self._perimeter
+
         total = 0
 
         for position in self.positions:
@@ -29,13 +38,22 @@ class Region:
 
             total += perimeter
 
+        self._perimeter = total
+
         return total
 
-    def __str__(self):
-        return f"<Region {self.letter} (price: {self.price}, area: {self.area}, perimeter: {self.perimeter})>"
-    
-    def __repr__(self):
-        return self.__str__()
+    def sides(self):
+        if self._sides is not None:
+            return self._sides
+        
+        total = 0
+
+        pos = self.start 
+
+        self._sides = total
+
+        return total
+
 
     @staticmethod
     def find(grid, x, y):
@@ -48,7 +66,7 @@ class Region:
             position = queue.popleft()
             visited[position] = 1
             
-            if grid[y][x] == target:
+            if grid[position.y][position.x] == target:
                 found[position] = 1
 
             for d in CARDINAL_2D:
@@ -67,14 +85,13 @@ class Region:
                     visited[p] = 1
                     queue.append(p)
 
-        return Region(target, found)
+        return Region(target, found, Position2D(x, y))
 
 def part_1_solution(regions):
     return sum(region.price for region in regions)
 
 def part_2_solution(regions):
     return
-
 
 def transform_prompt():
     grid = Prompt.read_to_grid(__file__)
@@ -88,9 +105,8 @@ def transform_prompt():
                 continue
 
             region = Region.find(grid, x, y)
+            regions.append(region)
 
             visited = visited | region.positions
-
-            regions.append(region)
 
     return regions
