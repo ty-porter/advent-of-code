@@ -68,7 +68,39 @@ class Vec2:
 
 
 class Direction2D(Vec2):
-    pass
+    @staticmethod
+    def UP():
+        return Direction2D(0, -1)
+
+    @staticmethod
+    def DOWN():
+        return Direction2D(0, 1)
+
+    @staticmethod
+    def LEFT():
+        return Direction2D(-1, 0)
+
+    @staticmethod
+    def RIGHT():
+        return Direction2D(1, 0)
+
+    # B A B A Start -- Infinite lives
+
+    @staticmethod
+    def UP_RIGHT():
+        return Direction2D(1, -1)
+
+    @staticmethod
+    def DOWN_RIGHT():
+        return Direction2D(1, 1)
+
+    @staticmethod
+    def UP_LEFT():
+        return Direction2D(-1, -1)
+
+    @staticmethod
+    def DOWN_LEFT():
+        return Direction2D(-1, 1)
 
 
 class Position2D(Vec2):
@@ -76,17 +108,17 @@ class Position2D(Vec2):
 
 
 CARDINAL_2D = [
-    Direction2D(0, 1),
-    Direction2D(1, 0),
-    Direction2D(0, -1),
-    Direction2D(-1, 0),
+    Direction2D.DOWN(),
+    Direction2D.RIGHT(),
+    Direction2D.UP(),
+    Direction2D.LEFT(),
 ]
 
 DIAGONAL_2D = [
-    Direction2D(1, 1),
-    Direction2D(-1, -1),
-    Direction2D(1, -1),
-    Direction2D(-1, 1),
+    Direction2D.DOWN_RIGHT(),
+    Direction2D.UP_LEFT(),
+    Direction2D.UP_RIGHT(),
+    Direction2D.DOWN_RIGHT(),
 ]
 
 
