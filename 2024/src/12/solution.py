@@ -1,5 +1,5 @@
 from src.prompt import Prompt
-from src.utils import Position2D, CARDINAL_2D_CW
+from src.utils import Position2D, Direction2D, CARDINAL_2D_CW
 
 from collections import deque
 
@@ -17,6 +17,10 @@ class Region:
     @property
     def price(self):
         return self.area * self.perimeter
+    
+    @property
+    def side_price(self):
+        return self.area * self.sides
 
     @property
     def area(self):
@@ -42,14 +46,46 @@ class Region:
 
         return total
 
+    @property
     def sides(self):
         if self._sides is not None:
             return self._sides
         
         total = 0
 
-        direction = CARDINAL_2D_CW[0]
-        pos = self.start + direction
+        # Assumption: Start is top left of region
+        tgt_dir = Direction2D.DOWN()
+        move_dir = Direction2D.RIGHT()
+        pos = self.start + Direction2D.UP()
+
+        while True:
+            while pos + tgt_dir in self.positions and pos + move_dir not in self.positions:
+                pos += move_dir
+
+            total += 1
+
+            # Store a temp direction to swap movement/target
+            tmp_dir = move_dir
+
+            # Shape is concave at side (pointer hit a wall)
+            if pos + move_dir in self.positions:
+                # Turn to face the opposite of the old target
+                move_dir = tgt_dir.turn180()
+                # Movement direction was orthogonal to the target already
+                tgt_dir = tmp_dir
+            # Shape is convex at side
+            elif pos + tgt_dir not in self.positions:
+                # breakpoint()
+                # Old target is the new direction of movement
+                move_dir = tgt_dir
+                # Movement direction was orthogonal to the target already, target will be opposite
+                tgt_dir = tmp_dir.turn180()
+
+            pos += move_dir
+
+            # Completed a cycle around the region
+            if pos == self.start + Direction2D.UP():
+                break
 
         self._sides = total
 
@@ -92,7 +128,7 @@ def part_1_solution(regions):
     return sum(region.price for region in regions)
 
 def part_2_solution(regions):
-    return
+    return sum(region.side_price for region in regions)
 
 def transform_prompt():
     grid = Prompt.read_to_grid(__file__)
