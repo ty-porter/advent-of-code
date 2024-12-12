@@ -107,13 +107,20 @@ class Position2D(Vec2):
     pass
 
 
+# Cardinal directions
 CARDINAL_2D = [
-    Direction2D.DOWN(),
-    Direction2D.RIGHT(),
     Direction2D.UP(),
+    Direction2D.RIGHT(),
+    Direction2D.DOWN(),
     Direction2D.LEFT(),
 ]
 
+# Cardinal directions (clockwise)
+CARDINAL_2D_CW = CARDINAL_2D
+# Cardinal directions (counter-clockwise)
+CARDINAL_2D_CCW = CARDINAL_2D[::-1]
+
+# Diagonal directions
 DIAGONAL_2D = [
     Direction2D.DOWN_RIGHT(),
     Direction2D.UP_LEFT(),
