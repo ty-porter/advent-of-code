@@ -101,6 +101,15 @@ class Direction2D(Vec2):
     @staticmethod
     def DOWN_LEFT():
         return Direction2D(-1, 1)
+    
+    def turn90CW(self):
+        return Direction2D(self.y, -self.x)
+
+    def turn90CCW(self):
+        return Direction2D(-self.y, self.x)
+    
+    def turn180(self):
+        return Direction2D(-self.x, -self.y)
 
 
 class Position2D(Vec2):
