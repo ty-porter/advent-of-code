@@ -113,7 +113,8 @@ class Direction2D(Vec2):
 
 
 class Position2D(Vec2):
-    pass
+    def manhattan_distance(self, other):
+        return abs(self.x - other.x) + abs(self.y - other.y)
 
 
 # Cardinal directions
