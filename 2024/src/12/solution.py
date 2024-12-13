@@ -1,18 +1,16 @@
 from src.prompt import Prompt
-from src.utils import Position2D, Direction2D, CARDINAL_2D_CW
+from src.utils import Position2D, Direction2D, CARDINAL_2D
 
 from collections import deque
 
 class Region:
-    def __init__(self, letter, positions, start):
+    def __init__(self, letter, positions):
         self.letter = letter
         self.positions = positions
 
-        # By iteration order this will always be a top left corner.
-        self.start = start
-
         self._perimeter = None
         self._sides = None
+        self._bounding_box = None
 
     @property
     def price(self):
@@ -36,7 +34,7 @@ class Region:
         for position in self.positions:
             perimeter = 4
 
-            for d in CARDINAL_2D_CW:
+            for d in CARDINAL_2D:
                 if position + d in self.positions:
                     perimeter -= 1
 
@@ -50,46 +48,77 @@ class Region:
     def sides(self):
         if self._sides is not None:
             return self._sides
-        
+
         total = 0
+        x1, y1, x2, y2 = self.bounding_box
 
-        # Assumption: Start is top left of region
-        tgt_dir = Direction2D.DOWN()
-        move_dir = Direction2D.RIGHT()
-        pos = self.start + Direction2D.UP()
-
-        while True:
-            while pos + tgt_dir in self.positions and pos + move_dir not in self.positions:
-                pos += move_dir
-
-            total += 1
-
-            # Store a temp direction to swap movement/target
-            tmp_dir = move_dir
-
-            # Shape is concave at side (pointer hit a wall)
-            if pos + move_dir in self.positions:
-                # Turn to face the opposite of the old target
-                move_dir = tgt_dir.turn180()
-                # Movement direction was orthogonal to the target already
-                tgt_dir = tmp_dir
-            # Shape is convex at side
-            elif pos + tgt_dir not in self.positions:
-                # breakpoint()
-                # Old target is the new direction of movement
-                move_dir = tgt_dir
-                # Movement direction was orthogonal to the target already, target will be opposite
-                tgt_dir = tmp_dir.turn180()
-
-            pos += move_dir
-
-            # Completed a cycle around the region
-            if pos == self.start + Direction2D.UP():
-                break
-
-        self._sides = total
+        for y in range(y1, y2 + 1):
+            for x in range(x1, x2 + 1):
+                p = Position2D(x, y)
+                total += self.internal_corners(p) + self.external_corners(p)
 
         return total
+    
+    @property
+    def bounding_box(self):
+        if self._bounding_box is not None:
+            return self._bounding_box
+
+        lx = ly = hx = hy = None
+
+        for p in self.positions:
+            if lx is None:
+                lx = hx = p.x
+                ly = hy = p.y
+
+            lx = min(lx, p.x)
+            hx = max(hx, p.x)
+            ly = min(ly, p.y)
+            hy = max(hy, p.y)
+
+        self._bounding_box = (lx, ly, hx, hy)
+
+        return self._bounding_box
+    
+    def internal_corners(self, p):
+        if p in self.positions:
+            return 0
+
+        corner_directions = [
+            [Direction2D.UP(), Direction2D.LEFT(), Direction2D.UP_LEFT()],
+            [Direction2D.UP(), Direction2D.RIGHT(), Direction2D.UP_RIGHT()],
+            [Direction2D.DOWN(), Direction2D.LEFT(), Direction2D.DOWN_LEFT()],
+            [Direction2D.DOWN(), Direction2D.RIGHT(), Direction2D.DOWN_RIGHT()],
+        ]
+
+        total = 0
+
+        for triplet in corner_directions:
+            total += all(p + d in self.positions for d in triplet)
+        
+        return total
+
+    def external_corners(self, p):
+        if p not in self.positions:
+            return 0
+
+        neighbors = [p + d for d in CARDINAL_2D if p + d in self.positions]
+        
+        if len(neighbors) == 0:
+            return 4
+
+        if len(neighbors) == 1:
+            return 2
+        
+        if len(neighbors) == 2:
+            vec = neighbors[0] - neighbors[1]
+
+            if abs(vec.x) > 1 or abs(vec.y) > 1:
+                return 0
+            
+            return 1
+
+        return 0
 
 
     @staticmethod
@@ -106,7 +135,7 @@ class Region:
             if grid[position.y][position.x] == target:
                 found[position] = 1
 
-            for d in CARDINAL_2D_CW:
+            for d in CARDINAL_2D:
                 p = position + d
                 
                 y_in_bound = p.y >= 0 and p.y < len(grid)
@@ -122,7 +151,7 @@ class Region:
                     visited[p] = 1
                     queue.append(p)
 
-        return Region(target, found, Position2D(x, y))
+        return Region(target, found)
 
 def part_1_solution(regions):
     return sum(region.price for region in regions)
