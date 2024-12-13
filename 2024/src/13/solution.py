@@ -1,94 +1,30 @@
 from src.prompt import Prompt
-from src.utils import Vec2, Position2D
-
-from dataclasses import dataclass, field
-from queue import PriorityQueue
+from src.utils import Vec2
 
 import re
 
+A = 3
+B = 1
 
-class Button(Vec2):
-    def __init__(self, cost, x, y):
-        super().__init__(x, y)
+def solve(a, b, p):
+    det = a.x * b.y - a.y * b.x
 
-        self.cost = cost
-
-
-@dataclass(order=True)
-class PQueueEntry:
-    distance: int
-    cost: int
-    position: Position2D = field(compare=False)
-    a_pressed: int = field(compare=False)
-    b_pressed: int = field(compare=False)
-
-
-def dfs(a, b, prize):
-    pq = PriorityQueue()
-    origin = Position2D()
-
-    if origin == prize:
+    if det == 0:
         return 0
 
-    visited = {}
+    ap = (b.x * p.y - b.y * p.x) / det
+    bp = (a.x * p.y - a.y * p.x) / det
 
-    entry = PQueueEntry(origin.manhattan_distance(prize), 0, origin, 0, 0)
-
-    pq.put(entry)
-
-    while not pq.empty():
-        entry = pq.get()
-
-        if entry.position == prize:
-            return entry.cost
-
-        if entry.position in visited:
-            continue
-
-        visited[entry.position] = 1
-
-        if entry.a_pressed < 100:
-            pressed = entry.position + a
-
-            pq.put(
-                PQueueEntry(
-                    pressed.manhattan_distance(prize),
-                    entry.cost + a.cost,
-                    pressed,
-                    entry.a_pressed + 1,
-                    entry.b_pressed,
-                )
-            )
-
-        if entry.b_pressed < 100:
-            pressed = entry.position + b
-
-            pq.put(
-                PQueueEntry(
-                    pressed.manhattan_distance(prize),
-                    entry.cost + b.cost,
-                    pressed,
-                    entry.a_pressed,
-                    entry.b_pressed + 1,
-                )
-            )
-
+    if int(ap) == ap and int(bp) == bp:
+        return int(abs(ap * A) + abs(bp * B))
+    
     return 0
 
-
 def part_1_solution(machines):
-    total = 0
+    return sum(solve(a, b, p) for a, b, p in machines)
 
-    for machine in machines:
-        a, b, prize = machine
-
-        total += dfs(a, b, prize)
-
-    return total
-
-
-def part_2_solution(values):
-    return
+def part_2_solution(machines):
+    return sum(solve(a, b, p + Vec2(1e13, 1e13)) for a, b, p in machines)
 
 
 def transform_prompt():
@@ -100,9 +36,9 @@ def transform_prompt():
 
         parse_nums = lambda s: list(int(d) for d in re.findall("\d+", s))
 
-        button_a = Button(3, *parse_nums(a))
-        button_b = Button(1, *parse_nums(b))
-        prize = Position2D(*parse_nums(p))
+        button_a = Vec2(*parse_nums(a))
+        button_b = Vec2(*parse_nums(b))
+        prize = Vec2(*parse_nums(p))
         parsed_machines.append((button_a, button_b, prize))
 
     return parsed_machines
