@@ -6,6 +6,7 @@ import re
 A = 3
 B = 1
 
+
 def solve(a, b, p):
     det = a.x * b.y - a.y * b.x
 
@@ -17,11 +18,13 @@ def solve(a, b, p):
 
     if int(ap) == ap and int(bp) == bp:
         return int(abs(ap * A) + abs(bp * B))
-    
+
     return 0
+
 
 def part_1_solution(machines):
     return sum(solve(a, b, p) for a, b, p in machines)
+
 
 def part_2_solution(machines):
     return sum(solve(a, b, p + Vec2(1e13, 1e13)) for a, b, p in machines)
