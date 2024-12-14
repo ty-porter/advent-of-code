@@ -41,12 +41,6 @@ WHERE rd.position % 4 = 3;
 CREATE OR REPLACE VIEW equations AS (
         SELECT
                 p.machine_id AS id
-                , a.x::NUMERIC AS ax
-                , a.y::NUMERIC AS ay
-                , b.x::NUMERIC AS bx
-                , b.y::NUMERIC AS by
-                , p.x::NUMERIC AS px
-                , p.y::NUMERIC AS py
                 , a.x::NUMERIC * b.y::NUMERIC - a.y::NUMERIC * b.x::NUMERIC AS determinant
                 , b.x::NUMERIC * p.y::NUMERIC - b.y::NUMERIC * p.x::NUMERIC AS a
                 , a.x::NUMERIC * p.y::NUMERIC - a.y::NUMERIC * p.x::NUMERIC AS b
@@ -60,12 +54,6 @@ CREATE OR REPLACE VIEW equations AS (
 CREATE OR REPLACE VIEW scaled_equations AS (
         SELECT
                 p.machine_id AS id
-                , a.x::NUMERIC AS ax
-                , a.y::NUMERIC AS ay
-                , b.x::NUMERIC AS bx
-                , b.y::NUMERIC AS by
-                , p.x::NUMERIC + 1e13 AS px
-                , p.y::NUMERIC + 1e13 AS py
                 , a.x::NUMERIC * b.y::NUMERIC - a.y::NUMERIC * b.x::NUMERIC AS determinant
                 , b.x::NUMERIC * (p.y::NUMERIC + 1e13) - b.y::NUMERIC * (p.x::NUMERIC + 1e13) AS a
                 , a.x::NUMERIC * (p.y::NUMERIC + 1e13) - a.y::NUMERIC * (p.x::NUMERIC + 1e13) AS b
