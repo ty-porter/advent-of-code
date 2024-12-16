@@ -56,21 +56,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT tick(100);
+SELECT tick(101 * 103);
 
-WITH quadrants AS (
+DROP VIEW IF EXISTS safety_factors;
+CREATE MATERIALIZED VIEW safety_factors AS (
+        WITH quadrants AS (
+                SELECT
+                        i
+                        , count(*) FILTER (WHERE x < floor(101 / 2) AND y < floor(103 / 2))  AS q1
+                        , count(*) FILTER (WHERE x > floor(101 / 2) AND y < floor(103 / 2))  AS q2
+                        , count(*) FILTER (WHERE x < floor(101 / 2) AND y > floor(103 / 2))  AS q3
+                        , count(*) FILTER (WHERE x > floor(101 / 2) AND y > floor(103 / 2))  AS q4
+                FROM robots
+                GROUP BY i
+        )
         SELECT
-                count(*)   FILTER (WHERE x < floor(101 / 2) AND y < floor(103 / 2))  AS q1
-                , count(*) FILTER (WHERE x > floor(101 / 2) AND y < floor(103 / 2))  AS q2
-                , count(*) FILTER (WHERE x < floor(101 / 2) AND y > floor(103 / 2))  AS q3
-                , count(*) FILTER (WHERE x > floor(101 / 2) AND y > floor(103 / 2))  AS q4
-        FROM robots
+                *
+                , q1 * q2 * q3 * q4 AS factor
+        FROM quadrants
+);
+
+WITH part1 AS (
+        SELECT
+                1 AS part
+                , factor AS result
+        FROM safety_factors
         WHERE i = 100
 )
+, part2 AS (
+        WITH min_safety_factor AS (
+                SELECT
+                        min(factor) AS factor
+                FROM safety_factors
+        )
+        SELECT
+                2 AS part
+                , sf.i AS result
+        FROM safety_factors sf
+        WHERE sf.factor = (SELECT msf.factor FROM min_safety_factor msf)
+)
 SELECT
-        q1 * q2 * q3 * q4 AS result
-        , *
-FROM quadrants;
+        update_solution(14, results.part, results.result)
+FROM (
+        SELECT * FROM part1
+        UNION ALL
+        SELECT * FROM part2
+) AS results;
 
 DROP FUNCTION
         tick
@@ -78,4 +109,5 @@ DROP FUNCTION
 
 DROP TABLE IF EXISTS
         raw_data
-        , robots;
+        , robots
+CASCADE;
