@@ -1,4 +1,4 @@
-from src.prompt import Prompt
+from src.utils.prompt import Prompt
 import copy, re
 
 # . collides with ID = 47, so use the max Unicode code point

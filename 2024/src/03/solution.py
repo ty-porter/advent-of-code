@@ -1,4 +1,4 @@
-from src.prompt import Prompt
+from src.utils.prompt import Prompt
 
 import re
 

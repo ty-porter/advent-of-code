@@ -1,5 +1,6 @@
-from src.prompt import Prompt
-from src.utils import Direction2D, Position2D, skippable
+from src.utils.prompt import Prompt
+from src.utils.plane import Direction2D, Position2D
+from src.utils import skippable
 
 from itertools import cycle, islice
 

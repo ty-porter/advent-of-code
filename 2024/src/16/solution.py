@@ -1,5 +1,6 @@
-from src.prompt import Prompt
-from src.utils import Position2D, Direction2D, CARDINAL_2D, skippable
+from src.utils.prompt import Prompt
+from src.utils.plane import Position2D, Direction2D, CARDINAL_2D
+from src.utils import skippable
 
 from dataclasses import dataclass, field
 from queue import PriorityQueue

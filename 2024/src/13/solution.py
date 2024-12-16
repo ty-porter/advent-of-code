@@ -1,5 +1,5 @@
-from src.prompt import Prompt
-from src.utils import Vec2
+from src.utils.prompt import Prompt
+from src.utils.plane import Vec2
 
 import re
 
