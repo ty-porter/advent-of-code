@@ -158,8 +158,10 @@ def skippable(ID):
 
     return decorator
 
-def generate_grid(x, y, default=' '):
+
+def generate_grid(x, y, default=" "):
     return [[default for _ in range(x)] for _ in range(y)]
+
 
 def print_2d_grid(grid, sep=""):
     for row in grid:
