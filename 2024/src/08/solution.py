@@ -1,5 +1,5 @@
-from src.prompt import Prompt
-from src.utils import Position2D
+from src.utils.prompt import Prompt
+from src.utils.plane import Position2D
 
 
 def generate_antinodes(p1, p2, bounds, fn):

@@ -1,23 +1,3 @@
-import argparse
-
-from functools import wraps
-
-parser = argparse.ArgumentParser(prog="Advent of Code 2024")
-parser.add_argument("solution", type=int, nargs="?")
-parser.add_argument("--no-skip", type=str, nargs="*")
-
-cliargs = parser.parse_args()
-
-
-class Color:
-    RED = 31
-    GREEN = 32
-    YELLOW = 33
-    BLUE = 34
-    MAGENTA = 35
-    CYAN = 36
-
-
 class Vec2:
     def __init__(self, x=0, y=0):
         self.x = x
@@ -138,27 +118,6 @@ DIAGONAL_2D = [
     Direction2D.DOWN_RIGHT(),
 ]
 
-
-def colorize(text, color_code):
-    return f"\033[{color_code}m{text}\033[0m"
-
-
-def skippable(ID):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if cliargs.no_skip is None or (
-                len(cliargs.no_skip) > 0 and ID not in cliargs.no_skip
-            ):
-                return f"< Skipped >\tPass --no-skip {ID} to run."
-
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
 def generate_grid(x, y, default=" "):
     return [[default for _ in range(x)] for _ in range(y)]
 
@@ -166,3 +125,4 @@ def generate_grid(x, y, default=" "):
 def print_2d_grid(grid, sep=""):
     for row in grid:
         print(sep.join(str(c) for c in row))
+

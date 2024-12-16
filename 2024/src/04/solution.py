@@ -1,5 +1,5 @@
-from src.prompt import Prompt
-from src.utils import Direction2D, Position2D
+from src.utils.prompt import Prompt
+from src.utils.plane import Direction2D, Position2D
 
 XMAS = "XMAS"
 X_MAS = "AMS"  # Sorted MAS

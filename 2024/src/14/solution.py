@@ -1,5 +1,5 @@
-from src.prompt import Prompt
-from src.utils import Position2D, Vec2, print_2d_grid
+from src.utils.prompt import Prompt
+from src.utils.plane import Position2D, Vec2
 
 
 X = 101

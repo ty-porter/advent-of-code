@@ -14,8 +14,10 @@ if cliargs.solution:
     else:
         raise Exception(f"Solution directory 'src/{solution_dir}' does not exist!")
 else:
-    for solution_dir in sorted(os.listdir("src")):
-        if os.path.isdir(f"src/{solution_dir}") and solution_dir != "__pycache__":
+    for dirno in range(1, 25):
+        solution_dir = str(dirno).zfill(2)
+
+        if os.path.isdir(f"src/{solution_dir}") and solution_dir:
             solution_dirs.append(f"src/{solution_dir}")
 
 print(colorize("Printing Advent of Code solutions for 2024!", Color.YELLOW))
