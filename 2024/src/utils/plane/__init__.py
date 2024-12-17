@@ -118,6 +118,7 @@ DIAGONAL_2D = [
     Direction2D.DOWN_RIGHT(),
 ]
 
+
 def generate_grid(x, y, default=" "):
     return [[default for _ in range(x)] for _ in range(y)]
 
@@ -125,4 +126,3 @@ def generate_grid(x, y, default=" "):
 def print_2d_grid(grid, sep=""):
     for row in grid:
         print(sep.join(str(c) for c in row))
-
