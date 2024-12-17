@@ -7,7 +7,9 @@ PROMPT_NAME = "prompt.txt"
 
 max_solution = 0
 
-for solution_dir in os.listdir(SOURCE_DIRECTORY):
+for dirno in range(1, 25):
+    solution_dir = str(dirno).zfill(2)
+
     if not os.path.isdir(f"{SOURCE_DIRECTORY}/{solution_dir}") or re.match(
         solution_dir, "\D"
     ):
