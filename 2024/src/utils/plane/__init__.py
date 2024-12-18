@@ -95,6 +95,9 @@ class Direction2D(Vec2):
 class Position2D(Vec2):
     def manhattan_distance(self, other):
         return abs(self.x - other.x) + abs(self.y - other.y)
+    
+    def cardinal_neighbors(self):
+        return [self + d for d in CARDINAL_2D]
 
 
 # Cardinal directions
@@ -122,6 +125,22 @@ DIAGONAL_2D = [
 def generate_grid(x, y, default=" "):
     return [[default for _ in range(x)] for _ in range(y)]
 
+
+def apply_points(grid, points, character="X"):
+    new_grid = []
+
+    for y, row in enumerate(grid):
+        new_row = []
+
+        for x, c in enumerate(row):
+            if Position2D(x, y) in points:
+                new_row.append(character)
+            else:
+                new_row.append(c)
+
+        new_grid.append(new_row)
+
+    return new_grid
 
 def print_2d_grid(grid, sep=""):
     for row in grid:
