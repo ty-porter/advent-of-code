@@ -120,8 +120,33 @@ def part_1_solution(cpu):
     return ",".join([str(i) for i in cpu.stdout])
 
 
-def part_2_solution(values):
-    return
+def part_2_solution(_cpu):
+    queue = [(len(_cpu.inst) - 1, 0)]
+    candidates = []
+
+    while queue:
+        it, a = queue.pop(0)
+
+        for oc in range(8):
+            candidate = (a << 3) + oc
+
+            cpu = CPU(_cpu.inst, reg_a=candidate)
+            cpu.run()
+
+            if not cpu.stdout == _cpu.inst[it:]:
+                continue
+
+            if it == 0:
+                candidates.append(candidate)
+
+            queue.append((it - 1, candidate))
+
+    for candidate in candidates:
+        cpu = CPU(_cpu.inst, reg_a=candidate)
+        cpu.run()
+
+        if cpu.stdout == _cpu.inst:
+            return candidate
 
 
 def transform_prompt():
