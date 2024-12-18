@@ -10,6 +10,7 @@ class SearchEntry:
     steps: int
     position: Position2D = field(compare=False)
 
+
 def shortest_path(X, Y, BYTES, BYTE_MAX):
     START = Position2D(0, 0)
     FINISH = Position2D(X, Y)
@@ -24,10 +25,10 @@ def shortest_path(X, Y, BYTES, BYTE_MAX):
 
         if entry.position == FINISH:
             return entry.steps
-        
+
         for neighbor in entry.position.cardinal_neighbors():
             if neighbor.x < 0 or neighbor.x > X or neighbor.y < 0 or neighbor.y > Y:
-                    continue
+                continue
 
             if neighbor in BYTES:
                 if BYTES[neighbor] <= BYTE_MAX:
@@ -39,8 +40,10 @@ def shortest_path(X, Y, BYTES, BYTE_MAX):
 
     return -1
 
+
 def part_1_solution(BYTES):
     return shortest_path(70, 70, BYTES, 1024)
+
 
 def part_2_solution(BYTES):
     lo, hi = (1025, len(BYTES))
@@ -54,6 +57,7 @@ def part_2_solution(BYTES):
             hi = mid
 
     return Prompt.read_to_list(__file__)[lo - 1]
+
 
 def transform_prompt():
     BYTES = {}
