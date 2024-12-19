@@ -1,5 +1,4 @@
 from src.utils.prompt import Prompt
-from src.utils import skippable
 from functools import cache
 
 from queue import PriorityQueue
@@ -42,6 +41,22 @@ def part_1_solution(args):
 
 def part_2_solution(args):
     patterns, designs = args
+
+    @cache
+    def permutations(design):
+        total = 0
+
+        for pattern in patterns:
+            if pattern == design:
+                total += 1
+
+            if design.startswith(pattern):
+                l = len(pattern)
+                total += permutations(design[l:])
+
+        return total
+
+    return sum(permutations(design) for design in designs)
 
 def transform_prompt():
     patterns, _, *design = Prompt.read_to_list(__file__)
