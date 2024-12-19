@@ -9,31 +9,28 @@ def part_1_solution(args):
 
     total = 0
     for design in designs:
-        found = 0
         pq = PriorityQueue()
         for pattern in patterns:
             pq.put((len(design), pattern, design))
 
         while not pq.empty():
-            sz, pat, des = pq.get()
+            _sz, pat, des = pq.get()
 
             if pat == des:
-                found = 1
+                total += 1
                 break
 
-            if pat != des[: len(pat)] or len(pat) > sz:
+            if not des.startswith(pat):
                 continue
 
             next_des = des[len(pat) :]
             next_sz = len(next_des)
 
             for next_pat in patterns:
-                if next_pat != next_des[: len(next_pat)] or len(next_pat) > next_sz:
+                if not next_des.startswith(next_pat):
                     continue
 
                 pq.put((next_sz, next_pat, next_des))
-
-        total += found
 
     return total
 
