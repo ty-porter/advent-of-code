@@ -14,7 +14,6 @@ def part_1_solution(args):
         for pattern in patterns:
             pq.put((len(design), pattern, design))
 
-
         while not pq.empty():
             sz, pat, des = pq.get()
 
@@ -22,14 +21,14 @@ def part_1_solution(args):
                 found = 1
                 break
 
-            if pat != des[:len(pat)] or len(pat) > sz:
+            if pat != des[: len(pat)] or len(pat) > sz:
                 continue
 
-            next_des = des[len(pat):]
+            next_des = des[len(pat) :]
             next_sz = len(next_des)
 
             for next_pat in patterns:
-                if next_pat != next_des[:len(next_pat)] or len(next_pat) > next_sz:
+                if next_pat != next_des[: len(next_pat)] or len(next_pat) > next_sz:
                     continue
 
                 pq.put((next_sz, next_pat, next_des))
@@ -58,8 +57,9 @@ def part_2_solution(args):
 
     return sum(permutations(design) for design in designs)
 
+
 def transform_prompt():
     patterns, _, *design = Prompt.read_to_list(__file__)
-    patterns = [pattern for pattern in patterns.split(', ')]
+    patterns = [pattern for pattern in patterns.split(", ")]
 
     return patterns, design
