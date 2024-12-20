@@ -1,9 +1,10 @@
 from src.utils.prompt import Prompt
 from src.utils.plane import Position2D
 
-WALL = '#'
-START = 'S'
-FINISH = 'E'
+WALL = "#"
+START = "S"
+FINISH = "E"
+
 
 def race(start, position, bounds, walls):
     route = []
@@ -19,7 +20,7 @@ def race(start, position, bounds, walls):
 
         route.append((position, distance))
         distance += 1
-        
+
         for neighbor in position.cardinal_neighbors():
             if neighbor.x < 0 or neighbor.y < 0:
                 continue
@@ -35,6 +36,7 @@ def race(start, position, bounds, walls):
     route.append((start, distance))
 
     return route
+
 
 def valid_cheats(route, max_dist, threshold):
     total = 0
@@ -52,15 +54,17 @@ def valid_cheats(route, max_dist, threshold):
 
             if cheat >= threshold:
                 total += 1
-    
+
     return total
 
 
 def part_1_solution(args):
     return valid_cheats(race(*args), 2, 100)
 
+
 def part_2_solution(args):
     return valid_cheats(race(*args), 20, 100)
+
 
 def transform_prompt():
     walls = {}
