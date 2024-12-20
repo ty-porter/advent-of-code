@@ -56,9 +56,9 @@ def part_1_solution(args):
 
     total = 0
     for position in distances:
-        for wall in position.cardinal_neighbors():
+        for cheat in position.cardinal_neighbors():
             found = 0
-            for neighbor in wall.cardinal_neighbors():
+            for neighbor in cheat.cardinal_neighbors():
                 if neighbor in walls:
                     continue
                 if neighbor not in distances:
