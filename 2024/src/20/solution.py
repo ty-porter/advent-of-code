@@ -5,12 +5,19 @@ WALL = '#'
 START = 'S'
 FINISH = 'E'
 
-def distance_along_path(start, position, bounds, walls):
-    distances = {}
-    distance = 0
-    while position != start:
-        distances[position] = distance
+def race(start, position, bounds, walls):
+    route = []
+    visited = {}
 
+    distance = 0
+
+    while position != start:
+        if position in visited:
+            continue
+
+        visited[position] = 1
+
+        route.append((position, distance))
         distance += 1
         
         for neighbor in position.cardinal_neighbors():
@@ -20,60 +27,40 @@ def distance_along_path(start, position, bounds, walls):
                 continue
             if neighbor in walls:
                 continue
-            if neighbor in distances:
+            if neighbor in visited:
                 continue
 
             position = neighbor
 
-    distances[start] = distance
+    route.append((start, distance))
 
-    return distances
+    return route
 
-def valid_cheats(distances, max_dist, cheat_threshold):
+def valid_cheats(route, max_dist, threshold):
     total = 0
 
-    for p1, d1 in distances.items():
-        for p2, d2 in distances.items():
-            if p1 == p2:
-                continue
-            
+    for i, pair in enumerate(route):
+        for j in range(i + 1, len(route)):
+            p1, d1 = pair
+            p2, d2 = route[j]
+
             dist = p1.manhattan_distance(p2)
-            if dist < 2 or dist > max_dist:
+            if dist > max_dist:
                 continue
 
-            cheat = abs(d1 - d2)
+            cheat = d2 - d1 - dist
 
-            if cheat >= cheat_threshold:
+            if cheat >= threshold:
                 total += 1
     
     return total
 
 
 def part_1_solution(args):
-    start, finish, bounds, walls = args
+    return valid_cheats(race(*args), 2, 100)
 
-    distances = distance_along_path(start, finish, bounds, walls)
-
-    total = 0
-    for position in distances:
-        for cheat in position.cardinal_neighbors():
-            found = 0
-            for neighbor in cheat.cardinal_neighbors():
-                if neighbor in walls:
-                    continue
-                if neighbor not in distances:
-                    continue
-                
-                if distances[position] - distances[neighbor] > 100:
-                    found = 1
-            
-            total += found
-
-    return total
-
-def part_2_solution(values):
-    return
-
+def part_2_solution(args):
+    return valid_cheats(race(*args), 20, 100)
 
 def transform_prompt():
     walls = {}
