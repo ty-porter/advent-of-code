@@ -6,6 +6,7 @@ from collections import Counter
 # Unique to my input
 # Minimum KV to generate paths for the samples + input
 KP_PATH = {
+    # Directional pad
     ("A", "<"): "v<<",
     ("A", ">"): "v",
     ("A", "v"): "<v",
@@ -25,6 +26,7 @@ KP_PATH = {
     ("v", "A"): "^>",
     ("v", ">"): ">",
     ("v", "<"): "<",
+    # Numpad
     ("A", "0"): "<",
     ("A", "1"): "^<<",
     ("A", "3"): "^",
