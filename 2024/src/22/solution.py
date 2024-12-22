@@ -13,14 +13,13 @@ def generate_secret_numbers(values):
         buf = []
         vseq = Counter()
 
-        for i in range(2000):
+        for _ in range(2000):
             o = v
             v = (v ^ (v * 64)) % 16777216
             v = (v ^ (v // 32)) % 16777216
             v = (v ^ (v * 2048)) % 16777216
 
-            if i >= 0:
-                buf.append((v % 10) - (o % 10))
+            buf.append((v % 10) - (o % 10))
 
             if len(buf) > 4:
                 buf.pop(0)
