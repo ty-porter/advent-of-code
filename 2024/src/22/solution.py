@@ -2,6 +2,7 @@ from src.utils.prompt import Prompt
 
 from collections import Counter
 
+
 def generate_secret_numbers(values):
     total = 0
     sequences = Counter()
@@ -34,6 +35,7 @@ def generate_secret_numbers(values):
             sequences[seq] += val
 
     return total, sequences
+
 
 def part_1_solution(values):
     return generate_secret_numbers(values)[0]
