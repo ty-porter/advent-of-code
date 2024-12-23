@@ -1,11 +1,12 @@
 from src.utils.prompt import Prompt
 
+import networkx as nx
 
-def part_1_solution(values):
+def part_1_solution(edges):
     nodes = {}
 
-    for pair in values:
-        n1, n2 = pair.split("-")
+    for edge in edges:
+        n1, n2 = edge.split("-")
 
         if n1 in nodes:
             if n2 in nodes[n1]:
@@ -33,9 +34,19 @@ def part_1_solution(values):
 
     return sum(interconnected.values())
 
-def part_2_solution(values):
-    return
+def part_2_solution(edges):
+    graph = nx.Graph()
 
+    for edge in edges:
+        n1, n2 = edge.split("-")
+
+        graph.add_edge(n1, n2)
+
+    cliques = list(nx.find_cliques_recursive(graph))
+    code = max(cliques, key=len)
+    code.sort()
+
+    return ",".join(code)
 
 def transform_prompt():
     return Prompt.read_to_list(__file__)
