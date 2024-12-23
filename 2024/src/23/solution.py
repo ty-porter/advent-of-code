@@ -1,28 +1,19 @@
 from src.utils.prompt import Prompt
 
+from collections import defaultdict
 import networkx as nx
 
 def part_1_solution(edges):
-    nodes = {}
+    nodes = defaultdict(list)
 
     for edge in edges:
         n1, n2 = edge.split("-")
 
-        if n1 in nodes:
-            if n2 in nodes[n1]:
-                continue
-
+        if n2 not in nodes[n1]:
             nodes[n1].append(n2)
-        else:
-            nodes[n1] = [n2]
 
-        if n2 in nodes:
-            if n1 in nodes[n2]:
-                continue
-
+        if n1 not in nodes[n2]:
             nodes[n2].append(n1)
-        else:
-            nodes[n2] = [n1]
 
     interconnected = {}
 
