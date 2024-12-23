@@ -3,6 +3,7 @@ from src.utils.prompt import Prompt
 from collections import defaultdict
 import networkx as nx
 
+
 def part_1_solution(edges):
     nodes = defaultdict(list)
 
@@ -21,9 +22,12 @@ def part_1_solution(edges):
         for n2 in a1:
             for n3 in nodes[n2]:
                 if n1 in nodes[n3]:
-                    interconnected[tuple(sorted([n1, n2, n3]))] = "t" in n1[0] + n2[0] + n3[0]
+                    interconnected[tuple(sorted([n1, n2, n3]))] = (
+                        "t" in n1[0] + n2[0] + n3[0]
+                    )
 
     return sum(interconnected.values())
+
 
 def part_2_solution(edges):
     graph = nx.Graph()
@@ -38,6 +42,7 @@ def part_2_solution(edges):
     code.sort()
 
     return ",".join(code)
+
 
 def transform_prompt():
     return Prompt.read_to_list(__file__)
