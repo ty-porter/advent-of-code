@@ -11,7 +11,7 @@ for dirno in range(1, 25):
     solution_dir = str(dirno).zfill(2)
 
     if not os.path.isdir(f"{SOURCE_DIRECTORY}/{solution_dir}") or re.match(
-        solution_dir, "\D"
+        solution_dir, "[^0-9]"
     ):
         continue
 
