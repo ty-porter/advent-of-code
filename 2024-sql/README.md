@@ -44,6 +44,16 @@ CREATE TABLE IF NOT EXISTS solutions (
 );
 ```
 
+The `raw_data` table stores each line of the puzzle input as a separate row -- any further post-processing will need to occur in a solution script.
+
+The `solutions` table stores solutions to each puzzle. You can query the solutions via:
+
+```sql
+SELECT * FROM solutions ORDER BY day ASC, part ASC;
+```
+
+You can update the solutions table with a function `update_solution(newday INT, newpart INT, newresult ANYELEMENT)` which will overwrite the solution for a given `(day, part)` and accepts any datatype that can be cast to a `VARCHAR`.
+
 ### Sample Scripts
 
 #### Windows
