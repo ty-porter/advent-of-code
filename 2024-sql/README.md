@@ -10,11 +10,8 @@ This is an attempt to complete as much of AoC 2024 in SQL as possible.
 
 ## Usage
 
-Each solution contains 3 files:
+Each solution contains 2 files:
 
-* `ingest.sql`
-  - This defines a table that is used to house the raw data for the solution prior to further parsing.
-  - Each row is 1 line of the prompt.
 * `solution.sql`
   - This is the main SQL script that produces the solution.
 * `prompt.txt`
@@ -24,21 +21,44 @@ Each solution contains 3 files:
 
 The solution directories are intentionally bare-bones to support multiple platforms and tools.
 
-To run them, create an executable script that runs `ingest.sql`, performs a `COPY` from the correct path, and then runs `solution.sql`.
+To run them, create an executable script that runs `common/setup.sql`, performs a `COPY` from the correct path, and then runs `solution.sql`.
 
 See [Sample Scripts](#sample-scripts) below for some examples on how this works.
+
+### Tables
+
+There are two main tables that are built for each solution called `raw_data` and `solutions`. `raw_data` is torn down per solution script, but the `solutions` table is retained and stores solutions long-term.
+
+```sql
+CREATE TABLE raw_data (
+        position SERIAL PRIMARY KEY
+        , raw_data VARCHAR
+);
+
+CREATE TABLE IF NOT EXISTS solutions (
+        day INT
+        , part INT
+        , result VARCHAR
+
+        , PRIMARY KEY (day, part)
+);
+```
 
 ### Sample Scripts
 
 #### Windows
 
 ```powershell
-set dayno=%1
-set connection=postgresql://username:password@localhost:5432/postgres
+# scripts/run.bat
+@echo off
 
-psql --quiet -f .\%dayno%\ingest.sql %connection%
-psql --quiet -c "COPY raw_data (raw_data) FROM 'C:\\Users\tyler\development\advent-of-code\2024-sql\%dayno%\prompt.txt' WITH (FORMAT text)" %connection%
-psql --quiet -f .\%dayno%\solution.sql %connection%
+set dayno=%1
+set connection=postgresql://aoc:aoc@localhost:5432/aoc
+
+psql -c "SET client_min_messages TO NOTICE;" %connection%
+psql --quiet -f .\common\setup.sql %connection%
+psql --quiet -c "COPY raw_data (raw_data) FROM 'C:\\Users\tyler\development\advent-of-code\2024-sql\solutions\%dayno%\prompt.txt' WITH (FORMAT text)" %connection%
+psql --quiet -f .\solutions\%dayno%\solution.sql %connection%
 ```
 
 Execution:
@@ -48,7 +68,7 @@ Execution:
 
  part |  result
 ------+----------
-    1 |  2970687
-    2 | 23963899
+    1 |  1234567
+    2 | 12345678
 (2 rows)
 ```
