@@ -72,7 +72,7 @@ func inputName() string {
 
   if len(AoCFlags.others) > 0 { return AoCFlags.others[0] }
 
-  return "input"
+  return "prompt"
 }
 
 func ForceInt(s string) int {
