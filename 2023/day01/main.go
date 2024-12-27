@@ -12,7 +12,7 @@ import (
 var words = [9]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
 
 func main() {
-	lines, err := util.LoadInput("day1")
+	lines, err := util.LoadInput()
 	util.CheckErr(err)
 
 	fmt.Println("Part 1: " + part1(lines))
