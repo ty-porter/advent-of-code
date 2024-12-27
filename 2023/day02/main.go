@@ -15,7 +15,7 @@ type Game struct {
 }
 
 func main() {
-	lines, err := util.LoadInput("day2")
+	lines, err := util.LoadInput()
 	util.CheckErr(err)
 
 	fmt.Println("Part 1: " + part1(lines))

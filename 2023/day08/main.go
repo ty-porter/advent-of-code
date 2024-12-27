@@ -17,7 +17,7 @@ type Node struct {
 }
 
 func main() {
-	lines, err := util.LoadInput("day8")
+	lines, err := util.LoadInput()
 	util.CheckErr(err)
 
 	nodes := make(map[string]Node)

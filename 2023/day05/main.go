@@ -15,7 +15,7 @@ type SeedMap struct {
 }
 
 func main() {
-	lines, err := util.LoadInput("day5")
+	lines, err := util.LoadInput()
 	util.CheckErr(err)
 
 	fmt.Println("Part 1: " + part1(lines))

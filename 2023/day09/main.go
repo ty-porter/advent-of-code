@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	lines, err := util.LoadInput("day9")
+	lines, err := util.LoadInput()
 	util.CheckErr(err)
 
 	parsedLines := make([][]int, 0)

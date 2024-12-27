@@ -24,7 +24,7 @@ type Coord struct {
 const target = 'S'
 
 func main() {
-	grid, err := util.LoadInput("day10")
+	grid, err := util.LoadInput()
 	util.CheckErr(err)
 
 	start := findStart(grid)

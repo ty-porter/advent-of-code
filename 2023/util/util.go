@@ -22,8 +22,10 @@ func CheckErr(e error) {
 	}
 }
 
-func LoadInput(path string) ([]string, error) {
-	file, err := os.Open(path + "/" + inputName() + ".txt")
+func LoadInput() ([]string, error) {
+	cwd, _ := os.Getwd()
+
+	file, err := os.Open(cwd + "/" + inputName() + ".txt")
 	CheckErr(err)
 
 	var lines []string
