@@ -1,84 +1,92 @@
 package util
 
 import (
-  "bufio"
-  "flag"
-  "os"
-  "strconv"
+	"bufio"
+	"flag"
+	"os"
+	"strconv"
 )
 
 type Flags struct {
-  loaded   bool
-  runPart1 bool
-  runPart2 bool
-  others   []string
+	loaded   bool
+	runPart1 bool
+	runPart2 bool
+	others   []string
 }
 
 var AoCFlags Flags
 
 func CheckErr(e error) {
-  if e != nil {
-      panic(e)
-  }
+	if e != nil {
+		panic(e)
+	}
 }
 
 func LoadInput(path string) ([]string, error) {
-  file, err := os.Open(path + "/" + inputName() + ".txt")
-  CheckErr(err)
+	file, err := os.Open(path + "/" + inputName() + ".txt")
+	CheckErr(err)
 
-  var lines []string
-  scanner := bufio.NewScanner(file)
+	var lines []string
+	scanner := bufio.NewScanner(file)
 
-  for scanner.Scan() {
-    lines = append(lines, scanner.Text())
-  }
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 
-  return lines, scanner.Err()
+	return lines, scanner.Err()
 }
 
 func (f *Flags) HasFlag(flag string) bool {
-  GetFlags()
+	GetFlags()
 
-  switch flag {
-  case "runPart1":
-    return f.runPart1
-  case "runPart2":
-    return f.runPart2
-  }
+	switch flag {
+	case "runPart1":
+		return f.runPart1
+	case "runPart2":
+		return f.runPart2
+	}
 
-  for _, other := range f.others {
-    if flag == other { return true }
-  }
+	for _, other := range f.others {
+		if flag == other {
+			return true
+		}
+	}
 
-  return false
+	return false
 }
 
 func GetFlags() Flags {
-  if AoCFlags.loaded { return AoCFlags }
+	if AoCFlags.loaded {
+		return AoCFlags
+	}
 
-  // Some days may limit running examples in cases where an algorithm is inefficient.
-  runPart1 := flag.Bool("run-part1", false, "Force running Part 1 solution that has been skipped by default.")
-  runPart2 := flag.Bool("run-part2", false, "Force running Part 2 solution that has been skipped by default.")
+	// Some days may limit running examples in cases where an algorithm is inefficient.
+	runPart1 := flag.Bool("run-part1", false, "Force running Part 1 solution that has been skipped by default.")
+	runPart2 := flag.Bool("run-part2", false, "Force running Part 2 solution that has been skipped by default.")
 
-  flag.Parse()
+	flag.Parse()
 
-  AoCFlags = Flags { loaded: true, runPart1: *runPart1, runPart2: *runPart2, others: flag.Args() }
+	AoCFlags = Flags{loaded: true, runPart1: *runPart1, runPart2: *runPart2, others: flag.Args()}
 
-  return AoCFlags
+	return AoCFlags
 }
 
 func inputName() string {
-  GetFlags()
+	GetFlags()
 
-  if len(AoCFlags.others) > 0 { return AoCFlags.others[0] }
+	if len(AoCFlags.others) > 0 {
+		return AoCFlags.others[0]
+	}
 
-  return "prompt"
+	return "prompt"
 }
 
 func ForceInt(s string) int {
-  i, err := strconv.Atoi(s)
+	i, err := strconv.Atoi(s)
 
-  if err != nil { panic(s) }
+	if err != nil {
+		panic(s)
+	}
 
-  return i
+	return i
 }
