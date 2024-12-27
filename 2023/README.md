@@ -4,10 +4,12 @@ Solutions for Advent of Code 2023
 
 # Usage
 
+Navigate to a solution directory: `advent-of-code/2023/day01`
+
 ## Run full solution for a day
 
 ```sh
-go run day01/main.go
+go run main.go
 
 # Runs with a full input at day01/input.txt
 ```
@@ -15,7 +17,7 @@ go run day01/main.go
 ## Run development solution with a custom input file
 
 ```sh
-go run day01/main.go test
+go run main.go test
 
 # Runs with a test input at day01/test.txt
 ```
@@ -23,8 +25,8 @@ go run day01/main.go test
 ## Force run a skipped solution (if applicable)
 
 ```sh
-go run day01/main.go -run-part2
-go run day01/main.go -run-part2 test
+go run main.go -run-part2
+go run main.go -run-part2 test
 
 # Some days can skip parts if the algorithm is inefficient.
 ```
