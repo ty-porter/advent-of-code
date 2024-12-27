@@ -1,3 +1,3 @@
-module github.com/ty-porter/advent-of-code-2023/day1
+module github.com/ty-porter/advent-of-code/2023/day01
 
-go 1.21.4
+go 1.23.4
