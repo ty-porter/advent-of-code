@@ -8,5 +8,5 @@ Navigate to each year's directory and follow the year-specific README to run the
 * [2022](/2022/)
 * [2023](/2023/)
 * [2024](/2024/)
-  - [python](/python/)
-  - [sql](/sql/)
+  - [python](/2024/python/)
+  - [sql](/2024/sql/)
