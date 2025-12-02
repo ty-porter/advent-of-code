@@ -56,17 +56,16 @@ long next_repeat(long i) {
     int rollover_sz = digits(sub + 1);
     int sub_mul = pow(10, sub_sz);
 
+    // Compute two numbers that are potential repeats c1 and c2.
     for (int d2 = 0; d2 < d / sub_sz; d2++) {
-      c1 *= sub_mul;
-      c1 += sub;
-
-      // rollover case
-      if (sub_sz == rollover_sz) {
-        c2 *= sub_mul;
-        c2 += sub + 1;
-      }
+      c1 *= sub_mul; c2 *= sub_mul;
+      c1 += sub;     c2 += sub + 1;
     }
 
+    /*
+    Rollover case. If the subsequence ends in 9, it rolls over and addition breaks.
+      ex: if i is 99, at sz = 1, sub = 10, c2 = 110, and is not a repeat.
+    */
     if (sub_sz < rollover_sz) {
       if (rollover_sz % 2 == 1) { c2 = next_double(c1); }
       else                      { c2 = next_repeat(c1 + 1); }
