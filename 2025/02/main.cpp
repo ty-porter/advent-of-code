@@ -19,6 +19,11 @@ int digits(long i) {
 }
 
 long next_double(long i) {
+  /*
+  * Algorithm:
+  *   If even:
+  *     Break the number into two equal parts.
+  */
   int d = digits(i);
 
   if (d % 2) return pow(10, d) + pow(10, d / 2);
@@ -41,35 +46,29 @@ long next_repeat(long i) {
 
   int max_sz = d / 2;
 
-  std::vector<long> subs;
   long sub = 0;
+  long candidate = __LONG_MAX__;
 
   for (int sz = 1; sz <= max_sz; sz++) {
     sub *= 10;
     sub += (i / pow(10, d - sz)) % 10;
 
     if (d % sz > 0) continue;
-    
-    subs.push_back(sub);
-  }
 
-  long candidate = __LONG_MAX__;
-
-  for (long s : subs) {
     long c1 = 0;
     long c2 = 0;
-    int sub_sz = digits(s);
-    int rollover_sz = digits(s + 1);
+    int sub_sz = digits(sub);
+    int rollover_sz = digits(sub + 1);
     int sub_mul = pow(10, sub_sz);
 
     for (int d2 = 0; d2 < d / sub_sz; d2++) {
       c1 *= sub_mul;
-      c1 += s;
+      c1 += sub;
 
       // rollover case
       if (sub_sz == rollover_sz) {
         c2 *= sub_mul;
-        c2 += s + 1;
+        c2 += sub + 1;
       }
     }
 
