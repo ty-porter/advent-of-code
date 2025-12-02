@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <charconv>
+#include <algorithm>
 
 #define UNUSED(x) ((void)(x))
 
