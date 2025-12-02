@@ -19,11 +19,6 @@ int digits(long i) {
 }
 
 long next_double(long i) {
-  /*
-  * Algorithm:
-  *   If even:
-  *     Break the number into two equal parts.
-  */
   int d = digits(i);
 
   if (d % 2) return pow(10, d) + pow(10, d / 2);
