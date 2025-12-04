@@ -44,7 +44,7 @@ int part1(const std::vector<std::string>& grid) {
   return s;
 }
 
-int part2(const std::vector<std::string>& grid) {
+int part2(std::vector<std::string>& grid) {
   std::vector<std::pair<int, int>> removed;
 
   for (size_t y = 0; y < grid.size(); y++) {
@@ -56,17 +56,11 @@ int part2(const std::vector<std::string>& grid) {
   }
 
   if (removed.size() > 0) {
-    std::vector<std::string> new_grid;
-
-    for (auto line : grid) {
-      new_grid.push_back(line);
-    }
-
     for (auto position : removed) {
-      new_grid[position.second][position.first] = '.';
+      grid[position.second][position.first] = '.';
     }
 
-    return removed.size() + part2(new_grid);
+    return removed.size() + part2(grid);
   }
 
   return 0;
