@@ -54,6 +54,27 @@ namespace AOC {
       s.remove_prefix(pos + 1);
     }
 
+    if (out.empty()) out.push_back(s);
+
+    return out;
+  }
+
+  inline std::vector<std::string_view> substring_split(std::string_view s, const std::string_view delimiter) {
+    std::vector<std::string_view> out;
+
+    while (!s.empty()) {
+      auto pos = s.find(delimiter);
+      out.push_back(s.substr(0, pos));
+
+      if (pos == std::string_view::npos) {
+        break;
+      }
+
+      s.remove_prefix(pos + delimiter.length());
+    }
+
+    if (out.empty()) out.push_back(s);
+
     return out;
   }
 
