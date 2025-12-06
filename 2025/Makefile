@@ -11,31 +11,39 @@ DAYS := $(shell printf "%02d " {1..12})
 .PHONY: help
 help:
 	@echo "Usage:"
-	@echo "  make 01           - Build and run day 01"
-	@echo "  make build01      - Build day 01"
-	@echo "  make run01        - Run day 01"
+	@echo "  make new          - Generate a new solution from template"
+	@echo "  make build        - Build solution runner"
+	@echo "  make run          - Run all solutions with benchmarking"
+	@echo "  make run DAY=N    - Run specific day N with benchmarking"
 	@echo "  make clean        - Clean all executables"
 
 # Mark all day patterns as phony
 .PHONY: $(DAYS)
 
-# Pattern rule for build and run (default)
-$(DAYS):
-	@$(MAKE) build$@ --no-print-directory
-	@$(MAKE) run$@ --no-print-directory
+# Generate a new solution directory
+.PHONY: new
+new:
+	@./generate.sh
 
-# Pattern rule for building only
-build%:
+# Build the solution executor
+.PHONY: build
+build:
 	@mkdir -p $(BUILD_DIR)
-	@$(CXX) $(CXXFLAGS) -I$(COMMON) $*/main.cpp -o $(BUILD_DIR)/$*.o
-	@echo "Built day $*"
+	@$(CXX) $(CXXFLAGS) -I$(COMMON) main.cpp -o $(BUILD_DIR)/runner.o
+	@echo "Built runner"
 
-# Pattern rule for running a day
-run%:
-	@$(BUILD_DIR)/$*.o $*/prompt.txt
+
+# Run the runner, optionally with a day
+.PHONY: run
+run:
+ifdef DAY
+	@$(BUILD_DIR)/runner.o $(DAY)
+else
+	@$(BUILD_DIR)/runner.o
+endif
 
 # Clean all executables
 .PHONY: clean
 clean:
-	@rm -rf $(BUILD_DIR)
+	@find build -name '*.o' -delete
 	@echo "Cleaned build directory"

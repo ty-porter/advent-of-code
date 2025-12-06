@@ -1,4 +1,7 @@
+#pragma once
 #include "../common/aoc.hpp"
+
+namespace day06 {
 
 enum Operator {
   ADD = '+',
@@ -38,8 +41,7 @@ long solve(
   return sum;
 }
 
-int main(int argc, char** argv) {
-  std::string input_file = argc > 1 ? argv[1] : "prompt.txt";
+void run(const std::string& input_file = "06/prompt.txt") {
   auto lines = AOC::read_lines(input_file);
 
   std::vector<std::vector<long>> row_operands;
@@ -103,3 +105,5 @@ int main(int argc, char** argv) {
   std::cout << "Part 1: " << p1_result << std::endl;
   std::cout << "Part 2: " << p2_result << std::endl;
 }
+
+} // namespace day06

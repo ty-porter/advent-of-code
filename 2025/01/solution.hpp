@@ -1,4 +1,7 @@
+#pragma once
 #include "../common/aoc.hpp"
+
+namespace day01 {
 
 int part1(const std::vector<std::string>& lines) {
   int dial = 50;
@@ -45,8 +48,7 @@ int part2(const std::vector<std::string>& lines) {
   return pw;
 }
 
-int main(int argc, char** argv) {
-  std::string input_file = argc > 1 ? argv[1] : "prompt.txt";
+void run(const std::string& input_file = "01/prompt.txt") {
   auto lines = AOC::read_lines(input_file);
 
   int p1_result = part1(lines);
@@ -55,3 +57,5 @@ int main(int argc, char** argv) {
   std::cout << "Part 1: " << p1_result << std::endl;
   std::cout << "Part 2: " << p2_result << std::endl;
 }
+
+} // namespace day01

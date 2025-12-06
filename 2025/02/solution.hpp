@@ -1,4 +1,7 @@
+#pragma once
 #include "../common/aoc.hpp"
+
+namespace day02 {
 
 long pow(long i, int e) {
   if (e == 0) { return 1; }
@@ -119,8 +122,7 @@ long part2(const std::vector<std::pair<long, long>>& ranges) {
   return invalid;
 }
 
-int main(int argc, char** argv) {
-  std::string input_file = argc > 1 ? argv[1] : "prompt.txt";
+void run(const std::string& input_file = "02/prompt.txt") {
   auto file = AOC::read_file(input_file);
   std::vector<std::string_view> range_strings = AOC::split(file, ',');
   std::vector<std::pair<long, long>> ranges;
@@ -140,3 +142,5 @@ int main(int argc, char** argv) {
   std::cout << "Part 1: " << p1_result << std::endl;
   std::cout << "Part 2: " << p2_result << std::endl;
 }
+
+} // namespace day02

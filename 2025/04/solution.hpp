@@ -1,4 +1,7 @@
+#pragma once
 #include "../common/aoc.hpp"
+
+namespace day04 {
 
 #define THRESHOLD 4
 
@@ -17,12 +20,12 @@ int count_adjacent(const std::vector<std::string>& grid, int x, int y) {
   int s = 0;
 
   for (std::pair<int, int> offset : offsets) {
-    size_t X, Y;
+    int X = x + offset.first;
+    int Y = y + offset.second;
 
-    X = x + offset.first;
-    Y = y + offset.second;
-
-    if (X >= grid.size() || Y >= grid[Y].size() || grid[Y][X] != '@') continue;
+    if (Y < 0 || Y >= (int)grid.size()) continue;
+    if (X < 0 || X >= (int)grid[Y].size()) continue;
+    if (grid[Y][X] != '@') continue;
 
     s++;
   }
@@ -66,13 +69,17 @@ int part2(std::vector<std::string>& grid) {
   return 0;
 }
 
-int main(int argc, char** argv) {
-  std::string input_file = argc > 1 ? argv[1] : "prompt.txt";
+void run(const std::string& input_file = "04/prompt.txt") {
   auto lines = AOC::read_lines(input_file);
 
   int p1_result = part1(lines);
-  int p2_result = part2(lines);
+
+  // Make a copy for part2 since it modifies the grid
+  auto lines_copy = lines;
+  int p2_result = part2(lines_copy);
 
   std::cout << "Part 1: " << p1_result << std::endl;
   std::cout << "Part 2: " << p2_result << std::endl;
 }
+
+} // namespace day04
