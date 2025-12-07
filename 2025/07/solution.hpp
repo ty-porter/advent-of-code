@@ -7,7 +7,7 @@ namespace day07 {
 #define SPLITTER '^'
 
 using DAG = std::map<AOC::Vec2, std::set<AOC::Vec2>>;
-std::map<AOC::Vec2, int> p2memo;
+std::map<AOC::Vec2, long> p2memo;
 
 int part1(const DAG& dag) {
   std::set<AOC::Vec2> hits;
@@ -20,11 +20,11 @@ int part1(const DAG& dag) {
   return hits.size();
 }
 
-int part2(const DAG& dag, const AOC::Vec2 root) {
+long part2(const DAG& dag, const AOC::Vec2 root) {
   if (p2memo.find(root) != p2memo.end()) return p2memo[root];
-  
+
   std::set<AOC::Vec2> hits = dag.find(root)->second;
-  int paths = 2;
+  long paths = 2;
 
   for (auto hit : hits) {
     paths += part2(dag, hit) - 1;
@@ -110,7 +110,7 @@ void run(const std::string& input_file = "07/prompt.txt") {
   int p1_result = part1(dag);
   std::cout << "Part 1: " << p1_result << std::endl;
 
-  int p2_result = part2(dag, root);
+  long p2_result = part2(dag, root);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 
