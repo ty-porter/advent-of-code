@@ -7,6 +7,7 @@ namespace day07 {
 #define SPLITTER '^'
 
 using DAG = std::map<AOC::Vec2, std::set<AOC::Vec2>>;
+std::map<AOC::Vec2, int> p2memo;
 
 int part1(const DAG& dag) {
   std::set<AOC::Vec2> hits;
@@ -20,18 +21,17 @@ int part1(const DAG& dag) {
 }
 
 int part2(const DAG& dag, const AOC::Vec2 root) {
-  auto it = dag.find(root);
-
-  if (it == dag.end()) return 0;
-
-  std::set<AOC::Vec2> hits = it->second;
-  int sum = 0;
+  if (p2memo.find(root) != p2memo.end()) return p2memo[root];
+  
+  std::set<AOC::Vec2> hits = dag.find(root)->second;
+  int paths = 2;
 
   for (auto hit : hits) {
-    sum += part2(dag, hit);
+    paths += part2(dag, hit) - 1;
   }
 
-  return 2 - hits.size() + sum;
+  p2memo[root] = paths;
+  return paths;
 }
 
 AOC::Vec2 get_root(const AOC::Vec2 start, const std::set<AOC::Vec2>& splitters) {
@@ -61,7 +61,7 @@ DAG build_dag(const AOC::Vec2 root, const size_t height, const std::set<AOC::Vec
       dag[splitter] = {};
     }
 
-    AOC::Vec2 left = splitter.add(AOC::Vec2::DOWNLEFT());
+    AOC::Vec2 left = splitter.add(AOC::Vec2(-1, 2));
 
     while (left.y < height) {
       if (splitters.find(left) != splitters.end()) {
@@ -70,11 +70,10 @@ DAG build_dag(const AOC::Vec2 root, const size_t height, const std::set<AOC::Vec
         break;
       }
 
-      left = left.add(AOC::Vec2::DOWN());
+      left = left.add(AOC::Vec2(0, 2));
     }
 
-    
-    AOC::Vec2 right = splitter.add(AOC::Vec2::DOWNRIGHT());
+    AOC::Vec2 right = splitter.add(AOC::Vec2(1, 2));
 
     while (right.y < height) {
       if (splitters.find(right) != splitters.end()) {
@@ -83,20 +82,11 @@ DAG build_dag(const AOC::Vec2 root, const size_t height, const std::set<AOC::Vec
         break;
       }
 
-      right = right.add(AOC::Vec2::DOWN());
+      right = right.add(AOC::Vec2(0, 2));
     }
   }
   
   return dag;
-}
-
-void print_dag(const DAG& dag) {
-  for (auto it : dag) {
-    std::cout << it.first << std::endl;
-    for (auto pos : it.second) {
-      std::cout << '\t' << pos << std::endl;
-    }
-  }
 }
 
 void run(const std::string& input_file = "07/prompt.txt") {
@@ -109,19 +99,18 @@ void run(const std::string& input_file = "07/prompt.txt") {
     for (size_t x = 0; x < lines[y].size(); x++) {
       char c = lines[y][x];
 
-      if (c == START) start = AOC::Vec2(x, y);
+      if (c == START)    start = AOC::Vec2(x, y);
       if (c == SPLITTER) splitters.insert(AOC::Vec2(x, y));
     }
   }
 
   AOC::Vec2 root = get_root(start, splitters);
-  DAG dag = build_dag(root, lines.size(), splitters);
+  DAG dag = build_dag(root, lines.size() - 1, splitters);
 
   int p1_result = part1(dag);
-  // int p2_result = part2(dag, root);
-  int p2_result = 0;
-
   std::cout << "Part 1: " << p1_result << std::endl;
+
+  int p2_result = part2(dag, root);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 
