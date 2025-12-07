@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <set>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -12,6 +13,40 @@
 #define UNUSED(x) ((void)(x))
 
 namespace AOC {
+
+  class Vec2 {
+  public:
+    double x;
+    double y;
+    Vec2() : x(0), y(0) {};
+    Vec2(double x, double y) {
+      this->x = x;
+      this->y = y;
+    }
+
+    static const AOC::Vec2 UP()    { return AOC::Vec2 {  0, -1 }; }
+    static const AOC::Vec2 DOWN()  { return AOC::Vec2 {  0,  1 }; }
+    static const AOC::Vec2 LEFT()  { return AOC::Vec2 { -1,  0 }; }
+    static const AOC::Vec2 RIGHT() { return AOC::Vec2 {  1,  0 }; }
+
+    bool operator==(const Vec2& other) const {
+      return x == other.x && y == other.y;
+    }
+
+    bool operator<(const Vec2& other) const {
+      if (x != other.x) return x < other.x;
+      return y < other.y;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Vec2& v2) {
+      os << '(' << v2.x << ',' << v2.y << ')';
+      return os;
+    }
+    
+    Vec2 add(const Vec2& other) {
+      return Vec2(x + other.x, y + other.y);
+    }
+  };
 
   inline std::vector<std::string> read_lines(std::string_view path) {
     std::ifstream prompt{std::string(path)};
