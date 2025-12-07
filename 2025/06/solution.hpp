@@ -100,9 +100,9 @@ void run(const std::string& input_file = "06/prompt.txt") {
   }
 
   long p1_result = solve(row_operands, row_operators);
-  long p2_result = solve(col_operands, col_operators);
-
   std::cout << "Part 1: " << p1_result << std::endl;
+
+  long p2_result = solve(col_operands, col_operators);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 

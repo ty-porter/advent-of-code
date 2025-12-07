@@ -73,12 +73,11 @@ void run(const std::string& input_file = "04/prompt.txt") {
   auto lines = AOC::read_lines(input_file);
 
   int p1_result = part1(lines);
+  std::cout << "Part 1: " << p1_result << std::endl;
 
   // Make a copy for part2 since it modifies the grid
   auto lines_copy = lines;
   int p2_result = part2(lines_copy);
-
-  std::cout << "Part 1: " << p1_result << std::endl;
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 

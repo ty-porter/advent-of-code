@@ -52,9 +52,9 @@ void run(const std::string& input_file = "01/prompt.txt") {
   auto lines = AOC::read_lines(input_file);
 
   int p1_result = part1(lines);
-  int p2_result = part2(lines);
-
   std::cout << "Part 1: " << p1_result << std::endl;
+
+  int p2_result = part2(lines);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 

@@ -137,9 +137,9 @@ void run(const std::string& input_file = "02/prompt.txt") {
   }
 
   long p1_result = part1(ranges);
-  long p2_result = part2(ranges);
-
   std::cout << "Part 1: " << p1_result << std::endl;
+
+  long p2_result = part2(ranges);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 

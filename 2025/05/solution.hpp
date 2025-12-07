@@ -76,9 +76,9 @@ void run(const std::string& input_file = "05/prompt.txt") {
   }
 
   int p1_result = part1(ranges, ids);
-  long p2_result = part2(ranges);
-
   std::cout << "Part 1: " << p1_result << std::endl;
+
+  long p2_result = part2(ranges);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 
