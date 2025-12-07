@@ -24,10 +24,15 @@ namespace AOC {
       this->y = y;
     }
 
-    static const AOC::Vec2 UP()    { return AOC::Vec2 {  0, -1 }; }
-    static const AOC::Vec2 DOWN()  { return AOC::Vec2 {  0,  1 }; }
-    static const AOC::Vec2 LEFT()  { return AOC::Vec2 { -1,  0 }; }
-    static const AOC::Vec2 RIGHT() { return AOC::Vec2 {  1,  0 }; }
+    static const AOC::Vec2 UP()        { return AOC::Vec2 {  0, -1 }; }
+    static const AOC::Vec2 DOWN()      { return AOC::Vec2 {  0,  1 }; }
+    static const AOC::Vec2 LEFT()      { return AOC::Vec2 { -1,  0 }; }
+    static const AOC::Vec2 RIGHT()     { return AOC::Vec2 {  1,  0 }; }
+
+    static const AOC::Vec2 UPLEFT()    { return AOC::Vec2 { -1, -1 }; }
+    static const AOC::Vec2 UPRIGHT()   { return AOC::Vec2 {  1, -1 }; }
+    static const AOC::Vec2 DOWNLEFT()  { return AOC::Vec2 { -1,  1 }; }
+    static const AOC::Vec2 DOWNRIGHT() { return AOC::Vec2 {  1,  1 }; }
 
     bool operator==(const Vec2& other) const {
       return x == other.x && y == other.y;

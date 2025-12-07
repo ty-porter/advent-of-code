@@ -6,48 +6,97 @@ namespace day07 {
 #define START 'S'
 #define SPLITTER '^'
 
-int part1(const AOC::Vec2 start, const size_t height, const std::set<AOC::Vec2>& splitters) {
-  std::set<AOC::Vec2> beams = { start };
-  int splits = 0;
-  bool finished = false;
+using DAG = std::map<AOC::Vec2, std::set<AOC::Vec2>>;
 
-  for (auto splitter : splitters) {
+int part1(const DAG& dag) {
+  std::set<AOC::Vec2> hits;
+
+  for (auto it : dag) {
+    hits.insert(it.first);
+    if (it.second.size() > 0) hits.insert(it.second.begin(), it.second.end());
   }
 
-  while (!finished) {
-    std::set<AOC::Vec2> new_beams = {};
-    size_t beams_finished = 0;
-
-    for (AOC::Vec2 beam : beams) {
-      AOC::Vec2 new_beam = beam.add(AOC::Vec2::DOWN());
-
-      if (splitters.find(new_beam) != splitters.end()) {
-        splits++;
-
-        AOC::Vec2 split_left  = new_beam.add(AOC::Vec2::LEFT());
-        AOC::Vec2 split_right = new_beam.add(AOC::Vec2::RIGHT());
-
-        new_beams.insert(split_left);
-        new_beams.insert(split_right);
-      }
-      else {
-        new_beams.insert(new_beam);
-
-        if (new_beam.y >= height - 1) { beams_finished++; }
-      }
-    }
-
-    finished = beams_finished == beams.size();
-    beams = new_beams;
-  }
-
-  return splits;
+  return hits.size();
 }
 
-int part2(const AOC::Vec2 start, const size_t height, const std::set<AOC::Vec2>& splitters) {
-  UNUSED(start); UNUSED(height); UNUSED(splitters);
+int part2(const DAG& dag, const AOC::Vec2 root) {
+  auto it = dag.find(root);
 
-  return 0;
+  if (it == dag.end()) return 0;
+
+  std::set<AOC::Vec2> hits = it->second;
+  int sum = 0;
+
+  for (auto hit : hits) {
+    sum += part2(dag, hit);
+  }
+
+  return 2 - hits.size() + sum;
+}
+
+AOC::Vec2 get_root(const AOC::Vec2 start, const std::set<AOC::Vec2>& splitters) {
+  AOC::Vec2 pos = AOC::Vec2().add(start);
+
+  while (splitters.find(pos) == splitters.end()) {
+    pos = pos.add(AOC::Vec2::DOWN());
+  }
+
+  return pos;
+}
+
+DAG build_dag(const AOC::Vec2 root, const size_t height, const std::set<AOC::Vec2>& splitters) {
+  DAG dag;
+  std::set<AOC::Vec2> queue = { root };
+  std::set<AOC::Vec2> seen  = {};
+
+  while (!queue.empty()) {
+    auto front = queue.extract(queue.begin());
+    AOC::Vec2 splitter = front.value();
+
+    if (seen.find(splitter) != seen.end()) continue;
+
+    seen.insert(splitter);
+
+    if (dag.find(splitter) == dag.end()) {
+      dag[splitter] = {};
+    }
+
+    AOC::Vec2 left = splitter.add(AOC::Vec2::DOWNLEFT());
+
+    while (left.y < height) {
+      if (splitters.find(left) != splitters.end()) {
+        dag[splitter].insert(left);
+        queue.insert(left);
+        break;
+      }
+
+      left = left.add(AOC::Vec2::DOWN());
+    }
+
+    
+    AOC::Vec2 right = splitter.add(AOC::Vec2::DOWNRIGHT());
+
+    while (right.y < height) {
+      if (splitters.find(right) != splitters.end()) {
+        dag[splitter].insert(right);
+        queue.insert(right);
+        break;
+      }
+
+      right = right.add(AOC::Vec2::DOWN());
+    }
+  }
+  
+  return dag;
+}
+
+void print_dag(const DAG& dag) {
+  for (auto it : dag) {
+    std::cout << it.first << std::endl;
+    for (auto pos : it.second) {
+      std::cout << '\t' << pos << std::endl;
+    }
+  }
 }
 
 void run(const std::string& input_file = "07/prompt.txt") {
@@ -60,13 +109,17 @@ void run(const std::string& input_file = "07/prompt.txt") {
     for (size_t x = 0; x < lines[y].size(); x++) {
       char c = lines[y][x];
 
-      if (c == START) { start = AOC::Vec2(x, y); }
-      if (c == SPLITTER) { splitters.insert(AOC::Vec2(x, y)); }
+      if (c == START) start = AOC::Vec2(x, y);
+      if (c == SPLITTER) splitters.insert(AOC::Vec2(x, y));
     }
   }
 
-  int p1_result = part1(start, lines.size(), splitters);
-  int p2_result = part2(start, lines.size(), splitters);
+  AOC::Vec2 root = get_root(start, splitters);
+  DAG dag = build_dag(root, lines.size(), splitters);
+
+  int p1_result = part1(dag);
+  // int p2_result = part2(dag, root);
+  int p2_result = 0;
 
   std::cout << "Part 1: " << p1_result << std::endl;
   std::cout << "Part 2: " << p2_result << std::endl;
