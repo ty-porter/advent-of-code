@@ -12,6 +12,7 @@
 #include "05/solution.hpp"
 #include "06/solution.hpp"
 #include "07/solution.hpp"
+#include "08/solution.hpp"
 
 const std::map<int, std::function<void()>> DAYS = {
   {1, []() { day01::run(); }},
@@ -21,6 +22,7 @@ const std::map<int, std::function<void()>> DAYS = {
   {5, []() { day05::run(); }},
   {6, []() { day06::run(); }},
   {7, []() { day07::run(); }},
+  {8, []() { day08::run(); }},
 };
 
 struct DayResult {
@@ -62,7 +64,7 @@ double run_single_day(int day) {
   auto it = DAYS.find(day);
   if (it == DAYS.end()) {
     std::cerr << "Day " << day << " not found!" << std::endl;
-    return 0;
+    return 1;
   }
 
   double elapsed = run_day_with_timing(it->second);
@@ -105,14 +107,8 @@ int main(int argc, char** argv) {
   print_header();
 
   if (argc > 1) {
-    try {
-      int day = std::stoi(argv[1]);
-      run_single_day(day);
-    } catch (const std::exception& e) {
-      std::cerr << "Invalid day number: " << argv[1] << std::endl;
-      std::cerr << "Usage: " << argv[0] << " [day_number]" << std::endl;
-      return 1;
-    }
+    int day = std::stoi(argv[1]);
+    run_single_day(day);
   } else {
     run_all();
   }
