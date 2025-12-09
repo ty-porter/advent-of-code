@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <charconv>
 #include <algorithm>
+#include <numeric>
 
 // AOC Vectors
 #include "vec2d.hpp"
