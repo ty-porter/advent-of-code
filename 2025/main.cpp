@@ -13,6 +13,7 @@
 #include "06/solution.hpp"
 #include "07/solution.hpp"
 #include "08/solution.hpp"
+#include "09/solution.hpp"
 
 const std::map<int, std::function<void()>> DAYS = {
   {1, []() { day01::run(); }},
@@ -23,6 +24,7 @@ const std::map<int, std::function<void()>> DAYS = {
   {6, []() { day06::run(); }},
   {7, []() { day07::run(); }},
   {8, []() { day08::run(); }},
+  {9, []() { day09::run(); }},
 };
 
 struct DayResult {
