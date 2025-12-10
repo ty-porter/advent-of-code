@@ -54,8 +54,8 @@ namespace AOC {
       );
     }
 
-    const Vec2D getMin() { return min; }
-    const Vec2D getMax() { return max; }
+    Vec2D getMin() const { return min; }
+    Vec2D getMax() const { return max; }
 
     double area() {
       double dx = max.x - min.x + 1;
