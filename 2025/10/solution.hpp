@@ -3,29 +3,66 @@
 
 namespace day10 {
 
-struct Machine {
-  uint target;
-  size_t sz;
-  std::vector<uint> buttons;
-  // TODO: joltages
-
-  friend std::ostream& operator<<(std::ostream& os, const Machine& m) {
-    os << "Machine{target: " << m.target << ", sz: " << m.sz  << ", btn_cnt: " << m.buttons.size() << '}';
-    return os;
-  }
-};
-
-struct MachineState {
+struct MachineIndicatorState {
   uint cost;
   uint state;
   uint prev_button;
 
-  bool operator<(const MachineState& rhs) const { return cost < rhs.cost; }
-  bool operator>(const MachineState& rhs) const { return cost > rhs.cost; }
-  bool operator==(const MachineState& rhs) const { return cost == rhs.cost && state == rhs.state; }
+  bool operator<(const MachineIndicatorState& rhs) const { return cost < rhs.cost; }
+  bool operator>(const MachineIndicatorState& rhs) const { return cost > rhs.cost; }
+  bool operator==(const MachineIndicatorState& rhs) const { return cost == rhs.cost && state == rhs.state; }
 
-  friend std::ostream& operator<<(std::ostream& os, const MachineState& ms) {
-    os << "MachineState{cost: " << ms.cost << ", state: " << ms.state  << ", prev: " << ms.prev_button << '}';
+  friend std::ostream& operator<<(std::ostream& os, const MachineIndicatorState& ms) {
+    os << "MachineIndicatorState{cost: " << ms.cost << ", state: " << ms.state  << ", prev: " << ms.prev_button << '}';
+    return os;
+  }
+};
+
+struct MachineJoltageState {
+  uint cost;
+  std::vector<uint> state;
+
+  bool operator<(const MachineJoltageState& rhs) const { return cost < rhs.cost; }
+  bool operator>(const MachineJoltageState& rhs) const { return cost > rhs.cost; }
+  bool operator==(const MachineJoltageState& rhs) const { return cost == rhs.cost && state == rhs.state; }
+
+  friend std::ostream& operator<<(std::ostream& os, const MachineJoltageState& ms) {
+    std::stringstream ss;
+
+    ss << '{';
+
+    for (size_t i = 0; i < ms.state.size(); i++) {
+        ss << ms.state[i];
+        if (i < ms.state.size() - 1) ss << ", ";
+    }
+
+    ss << '}';
+
+    os << "MachineJoltageState{cost: " << ms.cost << ", state: " << ss.str()  << '}';
+    return os;
+  }
+};
+
+struct Machine {
+  uint target;
+  size_t sz;
+  std::vector<uint> buttons;
+  std::vector<uint> joltages;
+
+  uint joltage_distance(const MachineJoltageState& mjs) {
+    uint sum = 0;
+
+    for (size_t i = 0; i < joltages.size(); i++) {
+      if (joltages[i] < mjs.state[i]) return -1; // Can never hit
+
+      sum += joltages[i] - mjs.state[i];
+    }
+
+    return sum;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Machine& m) {
+    os << "Machine{target: " << m.target << ", sz: " << m.sz  << ", btn_cnt: " << m.buttons.size() << '}';
     return os;
   }
 };
@@ -61,14 +98,29 @@ std::vector<uint> parse_buttons(const std::vector<std::string_view>& _buttons) {
   return parsed_buttons;
 }
 
+std::vector<uint> parse_joltages(const std::string_view _joltages) {
+  std::vector<uint> parsed_joltages;
+
+  const std::string joltage = static_cast<std::string>(_joltages).substr(1, _joltages.length() - 2);
+  std::vector<std::string_view> values = AOC::split(joltage, ',');
+  
+  for (int i = values.size() - 1; i >= 0; i--) {
+    uint j = 0;
+    j = std::stoi(static_cast<std::string>(values[i]));
+    parsed_joltages.push_back(j);
+  }
+
+  return parsed_joltages;
+}
+
 size_t bfs_shortest_path(Machine machine) {
-  MachineState start = { 0, 0, 0 };
-  std::priority_queue<MachineState, std::vector<MachineState>, std::greater<MachineState>> pqueue;
+  MachineIndicatorState start = { 0, 0, 0 };
+  std::priority_queue<MachineIndicatorState, std::vector<MachineIndicatorState>, std::greater<MachineIndicatorState>> pqueue;
   pqueue.push(start);
   std::set<uint> seen;
 
   while (!pqueue.empty()) {
-    MachineState machine_state = pqueue.top();
+    MachineIndicatorState machine_state = pqueue.top();
     pqueue.pop();
 
     if (machine_state.state == machine.target) return machine_state.cost;
@@ -79,7 +131,7 @@ size_t bfs_shortest_path(Machine machine) {
     for (auto b : machine.buttons) {
       if (machine_state.prev_button == b) continue;
 
-      MachineState next_state = {
+      MachineIndicatorState next_state = {
         machine_state.cost + 1,
         machine_state.state ^ b,
         b
@@ -104,8 +156,8 @@ long part1(const std::vector<Machine>& machines) {
   return min_cost;
 }
 
-long part2(const std::vector<std::string>& lines) {
-  UNUSED(lines);
+long part2(const std::vector<Machine>& machines) {
+  UNUSED(machines);
 
   return 0;
 }
@@ -120,15 +172,15 @@ void run(const std::string& input_file = "10/prompt.txt") {
 
     uint indicator = parse_indicator(parts[0]);
     std::vector<uint> buttons = parse_buttons(std::vector<std::string_view>(parts.begin() + 1, parts.end() - 1));
-    std::string joltages = std::string(parts[parts.size() - 1]); // TODO
+    std::vector<uint> joltages = parse_joltages(parts[parts.size() - 1]);
 
-    machines.push_back({ indicator, parts[0].size() - 2, buttons });
+    machines.push_back({ indicator, parts[0].size() - 2, buttons, joltages });
   }
 
   long p1_result = part1(machines);
   std::cout << "Part 1: " << p1_result << std::endl;
 
-  long p2_result = part2(lines);
+  long p2_result = part2(machines);
   std::cout << "Part 2: " << p2_result << std::endl;
 }
 
