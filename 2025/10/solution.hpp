@@ -28,14 +28,11 @@ struct MachineJoltageState {
 
   friend std::ostream& operator<<(std::ostream& os, const MachineJoltageState& ms) {
     std::stringstream ss;
-
     ss << '{';
-
     for (size_t i = 0; i < ms.state.size(); i++) {
         ss << ms.state[i];
         if (i < ms.state.size() - 1) ss << ", ";
     }
-
     ss << '}';
 
     os << "MachineJoltageState{cost: " << ms.cost << ", state: " << ss.str()  << '}';
@@ -49,8 +46,8 @@ struct Machine {
   std::vector<uint> buttons;
   std::vector<uint> joltages;
 
-  uint joltage_distance(const MachineJoltageState& mjs) {
-    uint sum = 0;
+  long joltage_distance(const MachineJoltageState& mjs) {
+    long sum = 0;
 
     for (size_t i = 0; i < joltages.size(); i++) {
       if (joltages[i] < mjs.state[i]) return -1; // Can never hit
@@ -62,7 +59,14 @@ struct Machine {
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Machine& m) {
-    os << "Machine{target: " << m.target << ", sz: " << m.sz  << ", btn_cnt: " << m.buttons.size() << '}';
+    std::stringstream ss;
+    ss << '{';
+    for (size_t i = 0; i < m.joltages.size(); i++) {
+        ss << m.joltages[i];
+        if (i < m.joltages.size() - 1) ss << ", ";
+    }
+    ss << '}';
+    os << "Machine{target: " << m.target << ", sz: " << m.sz  << ", btn_cnt: " << m.buttons.size() << ", joltage: " << ss.str() << '}';
     return os;
   }
 };
@@ -104,16 +108,17 @@ std::vector<uint> parse_joltages(const std::string_view _joltages) {
   const std::string joltage = static_cast<std::string>(_joltages).substr(1, _joltages.length() - 2);
   std::vector<std::string_view> values = AOC::split(joltage, ',');
   
-  for (int i = values.size() - 1; i >= 0; i--) {
+  // for (int i = values.size() - 1; i >= 0; i--) {
+  for (auto value : values) {
     uint j = 0;
-    j = std::stoi(static_cast<std::string>(values[i]));
+    j = std::stoi(static_cast<std::string>(value));
     parsed_joltages.push_back(j);
   }
 
   return parsed_joltages;
 }
 
-size_t bfs_shortest_path(Machine machine) {
+long bfs_shortest_path_by_indicator(Machine machine) {
   MachineIndicatorState start = { 0, 0, 0 };
   std::priority_queue<MachineIndicatorState, std::vector<MachineIndicatorState>, std::greater<MachineIndicatorState>> pqueue;
   pqueue.push(start);
@@ -123,7 +128,7 @@ size_t bfs_shortest_path(Machine machine) {
     MachineIndicatorState machine_state = pqueue.top();
     pqueue.pop();
 
-    if (machine_state.state == machine.target) return machine_state.cost;
+    if (machine_state.state == machine.target) return static_cast<long>(machine_state.cost);
     if (seen.find(machine_state.state) != seen.end()) continue;
 
     seen.insert(machine_state.state);
@@ -139,8 +144,48 @@ size_t bfs_shortest_path(Machine machine) {
 
       pqueue.push(next_state);
     }
+  }
 
-    if (machine_state.cost > 1000) break;
+  return -1;
+}
+
+long bfs_shortest_path_by_joltage(Machine machine) {
+  std::vector<uint> zero_joltages;
+
+  for (size_t i = 0; i < machine.joltages.size(); i++) zero_joltages.push_back(0);
+
+  MachineJoltageState start = { 0, zero_joltages };
+  std::priority_queue<MachineJoltageState, std::vector<MachineJoltageState>, std::greater<MachineJoltageState>> pqueue;
+  pqueue.push(start);
+  std::set<std::vector<uint>> seen;
+
+  while (!pqueue.empty()) {
+    MachineJoltageState machine_state = pqueue.top();
+    pqueue.pop();
+
+    if (machine.joltage_distance(machine_state) == 0) return static_cast<long>(machine_state.cost);
+    if (seen.find(machine_state.state) != seen.end()) continue;
+    seen.insert(machine_state.state);
+
+    if (machine.joltage_distance(machine_state) < 0) continue;
+
+    for (auto b : machine.buttons) {
+      std::vector<uint> new_joltages = std::vector<uint>(machine_state.state.begin(), machine_state.state.end());
+
+      size_t i = 0;
+      while (b) {
+        if (b & 1) new_joltages[i] += 1;
+        b >>= 1;
+        i++;
+      }
+
+      MachineJoltageState next_state = {
+        machine_state.cost + 1,
+        new_joltages
+      };
+
+      pqueue.push(next_state);
+    }
   }
 
   return -1;
@@ -150,16 +195,23 @@ long part1(const std::vector<Machine>& machines) {
   long min_cost = 0;
 
   for (Machine machine : machines) {
-    min_cost += bfs_shortest_path(machine);
+    min_cost += bfs_shortest_path_by_indicator(machine);
   }
 
   return min_cost;
 }
 
 long part2(const std::vector<Machine>& machines) {
-  UNUSED(machines);
+  long min_cost = 0;
 
-  return 0;
+  for (size_t i = 0; i < machines.size(); i++) {
+    Machine machine = machines[i];
+    min_cost += bfs_shortest_path_by_joltage(machine);
+
+    std::cout << "Completed " << i + 1 << " of " << machines.size() << std::endl;
+  }
+
+  return min_cost;
 }
 
 void run(const std::string& input_file = "10/prompt.txt") {
