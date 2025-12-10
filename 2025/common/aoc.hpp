@@ -10,6 +10,7 @@
 #include <charconv>
 #include <algorithm>
 #include <numeric>
+#include <queue>
 
 // AOC Vectors
 #include "vec2d.hpp"
