@@ -20,10 +20,11 @@ struct MachineIndicatorState {
 
 struct MachineJoltageState {
   uint cost;
+  uint dist;
   std::vector<uint> state;
 
-  bool operator<(const MachineJoltageState& rhs) const { return cost < rhs.cost; }
-  bool operator>(const MachineJoltageState& rhs) const { return cost > rhs.cost; }
+  bool operator<(const MachineJoltageState& rhs) const { return dist < rhs.dist; }
+  bool operator>(const MachineJoltageState& rhs) const { return dist > rhs.dist; }
   bool operator==(const MachineJoltageState& rhs) const { return cost == rhs.cost && state == rhs.state; }
 
   friend std::ostream& operator<<(std::ostream& os, const MachineJoltageState& ms) {
@@ -154,7 +155,8 @@ long bfs_shortest_path_by_joltage(Machine machine) {
 
   for (size_t i = 0; i < machine.joltages.size(); i++) zero_joltages.push_back(0);
 
-  MachineJoltageState start = { 0, zero_joltages };
+  MachineJoltageState start = { 0, 0, zero_joltages };
+  start.dist = machine.joltage_distance(start);
   std::priority_queue<MachineJoltageState, std::vector<MachineJoltageState>, std::greater<MachineJoltageState>> pqueue;
   pqueue.push(start);
   std::set<std::vector<uint>> seen;
@@ -163,7 +165,7 @@ long bfs_shortest_path_by_joltage(Machine machine) {
     MachineJoltageState machine_state = pqueue.top();
     pqueue.pop();
 
-    if (machine.joltage_distance(machine_state) == 0) return static_cast<long>(machine_state.cost);
+    if (machine_state.dist == 0) return static_cast<long>(machine_state.cost);
     if (seen.find(machine_state.state) != seen.end()) continue;
     seen.insert(machine_state.state);
 
@@ -181,8 +183,10 @@ long bfs_shortest_path_by_joltage(Machine machine) {
 
       MachineJoltageState next_state = {
         machine_state.cost + 1,
+        0,
         new_joltages
       };
+      next_state.dist = machine.joltage_distance(next_state);
 
       pqueue.push(next_state);
     }
@@ -204,11 +208,8 @@ long part1(const std::vector<Machine>& machines) {
 long part2(const std::vector<Machine>& machines) {
   long min_cost = 0;
 
-  for (size_t i = 0; i < machines.size(); i++) {
-    Machine machine = machines[i];
+  for (auto machine : machines) {
     min_cost += bfs_shortest_path_by_joltage(machine);
-
-    std::cout << "Completed " << i + 1 << " of " << machines.size() << std::endl;
   }
 
   return min_cost;
