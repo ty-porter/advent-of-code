@@ -11,34 +11,6 @@ struct MachineIndicatorState {
   bool operator<(const MachineIndicatorState& rhs) const { return cost < rhs.cost; }
   bool operator>(const MachineIndicatorState& rhs) const { return cost > rhs.cost; }
   bool operator==(const MachineIndicatorState& rhs) const { return cost == rhs.cost && state == rhs.state; }
-
-  friend std::ostream& operator<<(std::ostream& os, const MachineIndicatorState& ms) {
-    os << "MachineIndicatorState{cost: " << ms.cost << ", state: " << ms.state  << ", prev: " << ms.prev_button << '}';
-    return os;
-  }
-};
-
-struct MachineJoltageState {
-  uint cost;
-  uint dist;
-  std::vector<uint> state;
-
-  bool operator<(const MachineJoltageState& rhs) const { return dist < rhs.dist; }
-  bool operator>(const MachineJoltageState& rhs) const { return dist > rhs.dist; }
-  bool operator==(const MachineJoltageState& rhs) const { return cost == rhs.cost && state == rhs.state; }
-
-  friend std::ostream& operator<<(std::ostream& os, const MachineJoltageState& ms) {
-    std::stringstream ss;
-    ss << '{';
-    for (size_t i = 0; i < ms.state.size(); i++) {
-        ss << ms.state[i];
-        if (i < ms.state.size() - 1) ss << ", ";
-    }
-    ss << '}';
-
-    os << "MachineJoltageState{cost: " << ms.cost << ", state: " << ss.str()  << '}';
-    return os;
-  }
 };
 
 struct Machine {
@@ -46,30 +18,6 @@ struct Machine {
   size_t sz;
   std::vector<uint> buttons;
   std::vector<uint> joltages;
-
-  long joltage_distance(const MachineJoltageState& mjs) {
-    long sum = 0;
-
-    for (size_t i = 0; i < joltages.size(); i++) {
-      if (joltages[i] < mjs.state[i]) return -1; // Can never hit
-
-      sum += joltages[i] - mjs.state[i];
-    }
-
-    return sum;
-  }
-
-  friend std::ostream& operator<<(std::ostream& os, const Machine& m) {
-    std::stringstream ss;
-    ss << '{';
-    for (size_t i = 0; i < m.joltages.size(); i++) {
-        ss << m.joltages[i];
-        if (i < m.joltages.size() - 1) ss << ", ";
-    }
-    ss << '}';
-    os << "Machine{target: " << m.target << ", sz: " << m.sz  << ", btn_cnt: " << m.buttons.size() << ", joltage: " << ss.str() << '}';
-    return os;
-  }
 };
 
 uint parse_indicator(const std::string_view& indicator) {
@@ -108,8 +56,7 @@ std::vector<uint> parse_joltages(const std::string_view _joltages) {
 
   const std::string joltage = static_cast<std::string>(_joltages).substr(1, _joltages.length() - 2);
   std::vector<std::string_view> values = AOC::split(joltage, ',');
-  
-  // for (int i = values.size() - 1; i >= 0; i--) {
+
   for (auto value : values) {
     uint j = 0;
     j = std::stoi(static_cast<std::string>(value));
@@ -150,49 +97,93 @@ long bfs_shortest_path_by_indicator(Machine machine) {
   return -1;
 }
 
-long bfs_shortest_path_by_joltage(Machine machine) {
-  std::vector<uint> zero_joltages;
+// Convert button index to coefficient vector
+std::vector<int> button_to_coeffs(uint button, size_t num_vars) {
+  std::vector<int> coeffs(num_vars, 0);
+  for (size_t i = 0; i < num_vars; i++) {
+    if (button & (1 << i)) {
+      coeffs[i] = 1;
+    }
+  }
+  return coeffs;
+}
 
-  for (size_t i = 0; i < machine.joltages.size(); i++) zero_joltages.push_back(0);
+std::map<std::vector<int>, int> generate_patterns(const std::vector<std::vector<int>>& coeffs) {
+  std::map<std::vector<int>, int> pattern_costs;
+  size_t num_buttons = coeffs.size();
+  size_t num_variables = coeffs[0].size();
 
-  MachineJoltageState start = { 0, 0, zero_joltages };
-  start.dist = machine.joltage_distance(start);
-  std::priority_queue<MachineJoltageState, std::vector<MachineJoltageState>, std::greater<MachineJoltageState>> pqueue;
-  pqueue.push(start);
-  std::set<std::vector<uint>> seen;
+  for (int pattern_len = 0; pattern_len <= static_cast<int>(num_buttons); pattern_len++) {
+    std::vector<int> indices(num_buttons);
+    for (size_t i = 0; i < num_buttons; i++) indices[i] = i;
 
-  while (!pqueue.empty()) {
-    MachineJoltageState machine_state = pqueue.top();
-    pqueue.pop();
+    for (int mask = 0; mask < (1 << num_buttons); mask++) {
+      if (__builtin_popcount(mask) != pattern_len) continue;
 
-    if (machine_state.dist == 0) return static_cast<long>(machine_state.cost);
-    if (seen.find(machine_state.state) != seen.end()) continue;
-    seen.insert(machine_state.state);
-
-    if (machine.joltage_distance(machine_state) < 0) continue;
-
-    for (auto b : machine.buttons) {
-      std::vector<uint> new_joltages = std::vector<uint>(machine_state.state.begin(), machine_state.state.end());
-
-      size_t i = 0;
-      while (b) {
-        if (b & 1) new_joltages[i] += 1;
-        b >>= 1;
-        i++;
+      std::vector<int> pattern(num_variables, 0);
+      for (size_t i = 0; i < num_buttons; i++) {
+        if (mask & (1 << i)) {
+          for (size_t j = 0; j < num_variables; j++) {
+            pattern[j] += coeffs[i][j];
+          }
+        }
       }
 
-      MachineJoltageState next_state = {
-        machine_state.cost + 1,
-        0,
-        new_joltages
-      };
-      next_state.dist = machine.joltage_distance(next_state);
-
-      pqueue.push(next_state);
+      if (pattern_costs.find(pattern) == pattern_costs.end()) {
+        pattern_costs[pattern] = pattern_len;
+      }
     }
   }
 
-  return -1;
+  return pattern_costs;
+}
+
+long solve_single_machine(const std::vector<std::vector<int>>& coeffs, const std::vector<int>& goal) {
+  auto pattern_costs = generate_patterns(coeffs);
+
+  std::map<std::vector<int>, long> cache;
+
+  std::function<long(const std::vector<int>&)> solve_aux = [&](const std::vector<int>& current_goal) -> long {
+    bool all_zero = true;
+    for (int val : current_goal) {
+      if (val != 0) {
+        all_zero = false;
+        break;
+      }
+    }
+    if (all_zero) return 0;
+
+    if (cache.find(current_goal) != cache.end()) {
+      return cache[current_goal];
+    }
+
+    long answer = 1000000;
+
+    for (const auto& [pattern, pattern_cost] : pattern_costs) {
+      bool can_apply = true;
+      for (size_t i = 0; i < pattern.size(); i++) {
+        if (pattern[i] > current_goal[i] || (pattern[i] % 2) != (current_goal[i] % 2)) {
+          can_apply = false;
+          break;
+        }
+      }
+
+      if (can_apply) {
+        std::vector<int> new_goal(pattern.size());
+        for (size_t i = 0; i < pattern.size(); i++) {
+          new_goal[i] = (current_goal[i] - pattern[i]) / 2;
+        }
+
+        long sub_answer = solve_aux(new_goal);
+        answer = std::min(answer, static_cast<long>(pattern_cost) + 2 * sub_answer);
+      }
+    }
+
+    cache[current_goal] = answer;
+    return answer;
+  };
+
+  return solve_aux(goal);
 }
 
 long part1(const std::vector<Machine>& machines) {
@@ -206,10 +197,24 @@ long part1(const std::vector<Machine>& machines) {
 }
 
 long part2(const std::vector<Machine>& machines) {
+  /*
+    Solution inspired by https://www.reddit.com/r/adventofcode/comments/1pk87hl/2025_day_10_part_2_bifurcate_your_way_to_victory/
+    Not sure I would have solved this without it.
+  */
   long min_cost = 0;
 
   for (auto machine : machines) {
-    min_cost += bfs_shortest_path_by_joltage(machine);
+    std::vector<std::vector<int>> coeffs;
+    for (auto button : machine.buttons) {
+      coeffs.push_back(button_to_coeffs(button, machine.joltages.size()));
+    }
+
+    std::vector<int> goal;
+    for (auto joltage : machine.joltages) {
+      goal.push_back(static_cast<int>(joltage));
+    }
+
+    min_cost += solve_single_machine(coeffs, goal);
   }
 
   return min_cost;
