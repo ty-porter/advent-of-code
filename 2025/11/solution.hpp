@@ -3,65 +3,49 @@
 
 namespace day11 {
 
-using Path = std::set<std::string>;
-using Graph = std::unordered_map<std::string, Path>;
+using Graph = std::unordered_map<std::string, std::vector<std::string>>;
+using Memo = std::map<std::pair<std::string, std::string>, size_t>;
 
-void dfs(
-  const std::string& src, 
-  const std::string& dst, 
-  const Graph& graph, 
-  Path& path, 
-  std::vector<Path>& paths, 
-  Path& visited
-) {
-  path.insert(src);
+size_t count_paths(const std::string& pos, const std::string& target,
+                   const Graph& graph, Memo& memo) {
+  auto key = std::make_pair(pos, target);
+  if (memo.count(key)) {
+    return memo[key];
+  }
 
-  visited.insert(src);
-  if (src == dst) {
-    paths.push_back(path);
-  } else {
-    for (std::string adjacent : graph.find(src)->second) {
-      dfs(adjacent, dst, graph, path, paths, visited);
+  if (pos == target) {
+    return 1;
+  }
+
+  size_t total = 0;
+  auto it = graph.find(pos);
+  if (it != graph.end()) {
+    for (const std::string& neighbor : it->second) {
+      total += count_paths(neighbor, target, graph, memo);
     }
   }
 
-  path.erase(src);
+  memo[key] = total;
+  return total;
 }
 
 size_t part1(const Graph& graph) {
-  std::vector<Path> paths;
-  Path path;
-  Path visited;
-
-  dfs("you", "out", graph, path, paths, visited);
-
-  return paths.size();
+  Memo memo;
+  return count_paths("you", "out", graph, memo);
 }
 
 size_t part2(const Graph& graph) {
-  std::vector<Path> paths;
-  Path path;
-  Path visited;
+  Memo memo;
 
-  dfs("svr", "out", graph, path, paths, visited);
+  long path1 = count_paths("svr", "fft", graph, memo)
+               * count_paths("fft", "dac", graph, memo)
+               * count_paths("dac", "out", graph, memo);
 
-  size_t valid = 0;
+  long path2 = count_paths("svr", "dac", graph, memo)
+               * count_paths("dac", "fft", graph, memo)
+               * count_paths("fft", "out", graph, memo);
 
-  for (auto p : paths) {
-    short state = 0;
-
-    for (auto node : p) {
-      if (node == "dac") state |= 1;
-      if (node == "fft") state |= 2;
-
-      if (state == 3) {
-        valid++;
-        break;
-      }
-    }
-  }
-
-  return valid;
+  return path1 + path2;
 }
 
 void run(const std::string& input_file = "11/prompt.txt") {
@@ -71,13 +55,11 @@ void run(const std::string& input_file = "11/prompt.txt") {
 
   for (auto line : lines) {
     auto parts = AOC::substring_split(line, ": ");
-
     std::string vertex = static_cast<std::string>(parts[0]);
-
     graph[vertex] = {};
 
     for (auto adjacent : AOC::split(parts[1], ' ')) {
-      graph[vertex].insert(static_cast<std::string>(adjacent));
+      graph[vertex].push_back(static_cast<std::string>(adjacent));
     }
   }
 
